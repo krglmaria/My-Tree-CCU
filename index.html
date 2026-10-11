@@ -78,7 +78,12 @@
     .brand-name { margin: 0; font-size: 16px; font-weight: 750; letter-spacing: 0; }
     .brand-caption { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
 
-    .topbar-meta { display: flex; align-items: center; gap: 20px; }
+    .topbar-meta { display: flex; align-items: center; gap: 12px; }
+    .auth-controls { display: flex; align-items: center; gap: 7px; }
+    .auth-button { min-height: 32px; padding: 0 10px; border: 1px solid #d6e2d6; border-radius: 8px; background: #fff; color: #315a40; cursor: pointer; font-size: 10px; font-weight: 650; }
+    .auth-button:hover { border-color: #a9c6ac; background: #f7fbf6; }
+    .auth-button:focus-visible, .dialog-close:focus-visible, .remove-user:focus-visible { outline: 3px solid #a9d4ad; outline-offset: 2px; }
+    .role-pill { padding: 6px 8px; border-radius: 999px; background: #e8f2e9; color: #315a40; font-size: 9px; font-weight: 700; white-space: nowrap; }
     .site-nav { display: flex; align-items: center; gap: 22px; }
     .site-nav a { color: #536258; font-size: 12px; font-weight: 600; text-decoration: none; transition: color 160ms ease; }
     .site-nav a:hover, .site-nav a:focus-visible { color: var(--green); }
@@ -129,6 +134,16 @@
     .section-heading .section-note { font-size: 12px; }
     .demo-notice { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 18px; padding: 8px 11px; border: 1px solid #eadfbd; border-radius: 8px; background: #fbf7e9; color: #776634; font-size: 10px; }
     .demo-notice span { color: #aa8430; font-size: 13px; }
+    [hidden] { display: none !important; }
+    .auth-dialog { width: min(440px, calc(100% - 30px)); max-height: min(90vh, 720px); overflow: auto; padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: #fff; color: var(--ink); box-shadow: 0 25px 80px rgba(24, 36, 30, .22); }
+    .auth-dialog::backdrop { background: rgba(16, 33, 24, .48); backdrop-filter: blur(4px); }
+    .dialog-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; }
+    .dialog-heading h2 { font-size: 20px; }
+    .dialog-copy { margin: 9px 0 19px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .dialog-close { display: grid; width: 32px; height: 32px; flex: 0 0 auto; place-items: center; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: #536258; cursor: pointer; font-size: 18px; }
+    .auth-form { display: grid; gap: 13px; }
+    .auth-form .welcome-button { width: 100%; cursor: pointer; }
+    .auth-feedback { min-height: 18px; margin: 12px 0 0; color: #a24d3d; font-size: 11px; line-height: 1.5; }
     .page-intro {
       display: flex;
       align-items: flex-end;
@@ -280,6 +295,24 @@
     .add-tree-button:hover { background: var(--green-dark); }
     .add-tree-button:focus-visible { outline: 3px solid #a9d4ad; outline-offset: 2px; }
     .form-feedback { min-height: 17px; margin: 0 2px 10px; color: var(--green); font-size: 10px; }
+    .admin-panel { margin-bottom: 18px; padding: 17px; border: 1px solid #dce8dc; border-radius: 13px; background: #f9fcf8; }
+    .admin-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .admin-heading h3 { margin: 0; font-size: 13px; }
+    .admin-heading p { margin: 0; color: var(--muted); font-size: 10px; }
+    .user-form { grid-template-columns: 1fr 1fr 1fr auto; margin: 0; padding: 0; border: 0; background: transparent; box-shadow: none; }
+    .user-form .add-tree-button { white-space: nowrap; }
+    .user-feedback { min-height: 16px; margin: 9px 0 0; color: var(--green); font-size: 10px; }
+    .account-list { display: grid; gap: 6px; margin-top: 10px; }
+    .account-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border: 1px solid #e6ece5; border-radius: 8px; background: #fff; }
+    .account-meta { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .account-name { overflow: hidden; color: #334239; font-size: 10px; font-weight: 650; text-overflow: ellipsis; }
+    .account-role { color: var(--muted); font-size: 9px; white-space: nowrap; }
+    .remove-user { min-height: 28px; padding: 0 8px; border: 1px solid #ecd9d6; border-radius: 7px; background: #fff; color: #9b4539; cursor: pointer; font-size: 9px; }
+    .remove-user:hover { background: #fbf2f0; }
+    .status-text { display: inline-flex; padding: 6px 9px; border-radius: 999px; background: #eef6ed; color: #326744; font-size: 10px; font-weight: 650; white-space: nowrap; }
+    .status-text[data-status="watered"] { background: #edf7f5; color: #286d65; }
+    .status-text[data-status="established"] { background: #f4f7e8; color: #66772d; }
+    .access-hint { margin: 0 0 11px; color: var(--muted); font-size: 11px; }
     .catalog-tools { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 12px; }
     .catalog-filters { display: flex; flex: 1; gap: 9px; }
     .catalog-search, .catalog-status { min-height: 40px; padding: 0 12px; border: 1px solid #dce5dc; border-radius: 9px; background: #fff; color: var(--ink); font: inherit; font-size: 11px; }
@@ -328,6 +361,9 @@
       .topbar { min-height: auto; }
       .topbar-inner { width: min(100% - 32px, 560px); flex-wrap: wrap; padding: 12px 0; }
       .topbar-meta { width: 100%; justify-content: space-between; }
+      .auth-controls { gap: 5px; }
+      .auth-button { min-height: 30px; padding: 0 8px; font-size: 9px; }
+      .role-pill { display: none; }
       .site-nav { order: 3; width: 100%; justify-content: space-between; gap: 12px; padding-top: 3px; }
       .site-nav a { font-size: 11px; }
       .initiative { display: none; }
@@ -367,6 +403,9 @@
       .catalog-tools { align-items: stretch; flex-direction: column; }
       .catalog-filters { flex-direction: column; }
       .catalog-search { width: 100%; }
+      .user-form { grid-template-columns: 1fr; }
+      .user-form .add-tree-button { grid-column: auto; }
+      .admin-heading { align-items: flex-start; flex-direction: column; gap: 4px; }
     }
   </style>
 </head>
@@ -395,10 +434,35 @@
             <span class="initiative-mark" aria-hidden="true">ТК</span>
             <span>Таза Казахстан</span>
           </div>
-          <span class="live-label" id="server-status" data-connected="false" aria-live="polite"><span class="live-dot" aria-hidden="true"></span>Подключение к серверу</span>
+          <div class="auth-controls">
+            <span class="live-label" id="server-status" data-connected="false" aria-live="polite"><span class="live-dot" aria-hidden="true"></span>Подключение к серверу</span>
+            <span class="role-pill" id="user-badge" hidden></span>
+            <button class="auth-button" id="auth-open" type="button">Войти</button>
+            <button class="auth-button" id="logout-button" type="button" hidden>Выйти</button>
+          </div>
         </div>
       </div>
     </header>
+
+    <dialog class="auth-dialog" id="auth-dialog" aria-labelledby="auth-title">
+      <div class="dialog-heading">
+        <h2 id="auth-title">Вход в трекер</h2>
+        <button class="dialog-close" id="auth-close" type="button" aria-label="Закрыть">×</button>
+      </div>
+      <p class="dialog-copy" id="auth-copy">Войдите, чтобы управлять посадками.</p>
+      <form class="auth-form" id="setup-form" hidden>
+        <label class="form-field"><span>Логин администратора</span><input name="username" type="text" minlength="3" maxlength="32" pattern="[A-Za-z0-9._\-]+" autocomplete="username" required></label>
+        <label class="form-field"><span>Пароль (от 10 символов)</span><input name="password" type="password" minlength="10" maxlength="128" autocomplete="new-password" required></label>
+        <label class="form-field"><span>Повторите пароль</span><input name="confirmPassword" type="password" minlength="10" maxlength="128" autocomplete="new-password" required></label>
+        <button class="welcome-button" type="submit">Создать администратора</button>
+      </form>
+      <form class="auth-form" id="login-form">
+        <label class="form-field"><span>Логин</span><input name="username" type="text" autocomplete="username" required></label>
+        <label class="form-field"><span>Пароль</span><input name="password" type="password" autocomplete="current-password" required></label>
+        <button class="welcome-button" type="submit">Войти</button>
+      </form>
+      <p class="auth-feedback" id="auth-feedback" aria-live="polite"></p>
+    </dialog>
 
     <main>
       <section class="workspace-heading" id="overview" aria-labelledby="page-title">
@@ -479,7 +543,19 @@
 
       <section class="section-block" id="add-tree" aria-labelledby="add-tree-title">
         <div class="section-heading"><div><h2 id="add-tree-title">Добавить посадку</h2><p class="section-note">Заполните карточку дерева и отметьте его текущий статус.</p></div></div>
-        <form class="tree-form" id="tree-form">
+        <p class="access-hint" id="access-hint" hidden></p>
+        <section class="admin-panel" id="admin-panel" aria-labelledby="admin-panel-title" hidden>
+          <div class="admin-heading"><h3 id="admin-panel-title">Управление доступом</h3><p>Пароли передаются человеку отдельно и сохраняются только в виде хеша.</p></div>
+          <form class="tree-form user-form" id="create-user-form">
+            <label class="form-field"><span>Логин</span><input name="username" type="text" minlength="3" maxlength="32" pattern="[A-Za-z0-9._\-]+" autocomplete="off" required></label>
+            <label class="form-field"><span>Начальный пароль</span><input name="password" type="password" minlength="10" maxlength="128" autocomplete="new-password" required></label>
+            <label class="form-field"><span>Права</span><select name="role" required><option value="editor">Редактор</option><option value="viewer">Только просмотр</option></select></label>
+            <button class="add-tree-button" type="submit">Создать аккаунт</button>
+          </form>
+          <p class="user-feedback" id="user-feedback" aria-live="polite"></p>
+          <div class="account-list" id="account-list"></div>
+        </section>
+        <form class="tree-form" id="tree-form" hidden>
           <label class="form-field"><span>Имя дерева</span><input id="tree-name" name="name" type="text" maxlength="48" placeholder="Дуб «CCU-2»" required></label>
           <label class="form-field"><span>Кем посажено</span><input id="tree-planted-by" name="plantedBy" type="text" maxlength="32" placeholder="Э-21 или имя студента" required></label>
           <label class="form-field"><span>Дата посадки</span><input id="tree-date" name="date" type="date" required></label>
@@ -513,6 +589,8 @@
     let animationFrame;
     let trees = [];
     let activity = [];
+    let currentUser = null;
+    let setupRequired = false;
 
     const formatNumber = (value) => new Intl.NumberFormat('ru-RU').format(value);
 
@@ -537,11 +615,20 @@
 
     async function loadTracker() {
       try {
-        const store = await apiRequest('/api/trees');
+        const [auth, store] = await Promise.all([
+          apiRequest('/api/auth/me'),
+          apiRequest('/api/trees')
+        ]);
+        currentUser = auth.user;
+        setupRequired = auth.setupRequired;
         trees = store.trees;
         activity = store.activity;
         setServerStatus(true);
         renderDashboard();
+        if (currentUser?.role === 'admin') await loadAdminAccounts();
+        if (setupRequired && !document.getElementById('auth-dialog').open) {
+          openAuthDialog();
+        }
       } catch (error) {
         trees = [];
         activity = [];
@@ -549,6 +636,82 @@
         renderDashboard();
         document.getElementById('form-feedback').textContent = 'Не удалось связаться с сервером. Запустите проект командой npm start.';
       }
+    }
+
+    function openAuthDialog() {
+      const isSetup = setupRequired;
+      const dialog = document.getElementById('auth-dialog');
+      document.getElementById('auth-title').textContent = isSetup ? 'Первичная настройка' : 'Вход в трекер';
+      document.getElementById('auth-copy').textContent = isSetup
+        ? 'Создайте аккаунт администратора. После этого только администратор сможет выдавать доступ.'
+        : 'Войдите по логину и паролю, выданным администратором.';
+      document.getElementById('setup-form').hidden = !isSetup;
+      document.getElementById('login-form').hidden = isSetup;
+      document.getElementById('auth-feedback').textContent = '';
+      if (!dialog.open) dialog.showModal();
+    }
+
+    function applyAccess() {
+      const canEdit = ['admin', 'editor'].includes(currentUser?.role);
+      const authOpen = document.getElementById('auth-open');
+      const userBadge = document.getElementById('user-badge');
+      const logoutButton = document.getElementById('logout-button');
+      const roleNames = { admin: 'Администратор', editor: 'Редактор', viewer: 'Просмотр' };
+
+      authOpen.hidden = Boolean(currentUser);
+      authOpen.textContent = setupRequired ? 'Создать администратора' : 'Войти';
+      userBadge.hidden = !currentUser;
+      userBadge.textContent = currentUser ? `${currentUser.username} · ${roleNames[currentUser.role]}` : '';
+      logoutButton.hidden = !currentUser;
+      document.getElementById('tree-form').hidden = !canEdit;
+      document.getElementById('admin-panel').hidden = currentUser?.role !== 'admin';
+
+      const accessHint = document.getElementById('access-hint');
+      accessHint.hidden = canEdit;
+      accessHint.textContent = currentUser
+        ? 'У этой учётной записи доступ только для просмотра. Для редактирования обратитесь к администратору.'
+        : 'Каталог открыт для просмотра. Чтобы добавлять деревья или менять статусы, войдите как редактор.';
+    }
+
+    async function loadAdminAccounts() {
+      try {
+        const result = await apiRequest('/api/users');
+        renderAdminAccounts(result.users);
+      } catch (error) {
+        document.getElementById('user-feedback').textContent = error.message;
+      }
+    }
+
+    function renderAdminAccounts(users) {
+      const accountList = document.getElementById('account-list');
+      const roleNames = { admin: 'Администратор', editor: 'Редактор', viewer: 'Только просмотр' };
+      accountList.replaceChildren();
+
+      users.forEach((user) => {
+        const row = document.createElement('div');
+        const meta = document.createElement('div');
+        const username = document.createElement('span');
+        const role = document.createElement('span');
+        row.className = 'account-row';
+        meta.className = 'account-meta';
+        username.className = 'account-name';
+        username.textContent = user.username;
+        role.className = 'account-role';
+        role.textContent = roleNames[user.role] || user.role;
+        meta.append(username, role);
+        row.append(meta);
+
+        if (user.id !== currentUser?.id) {
+          const removeButton = document.createElement('button');
+          removeButton.className = 'remove-user';
+          removeButton.type = 'button';
+          removeButton.dataset.userId = user.id;
+          removeButton.textContent = 'Отозвать доступ';
+          row.append(removeButton);
+        }
+
+        accountList.append(row);
+      });
     }
 
     // Сглаживание числового перехода без сторонних библиотек.
@@ -628,21 +791,29 @@
         const dateCell = document.createElement('td');
         dateCell.textContent = new Intl.DateTimeFormat('ru-RU', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(`${tree.date}T12:00:00`));
         const statusCell = document.createElement('td');
-        const status = document.createElement('select');
-        status.className = 'status-select';
-        status.dataset.treeId = tree.id;
-        status.dataset.status = tree.status;
-        status.setAttribute('aria-label', `Статус: ${tree.name}`);
+        if (['admin', 'editor'].includes(currentUser?.role)) {
+          const status = document.createElement('select');
+          status.className = 'status-select';
+          status.dataset.treeId = tree.id;
+          status.dataset.status = tree.status;
+          status.setAttribute('aria-label', `Статус: ${tree.name}`);
 
-        Object.entries(statusLabels).forEach(([value, label]) => {
-          const option = document.createElement('option');
-          option.value = value;
-          option.textContent = label;
-          option.selected = value === tree.status;
-          status.append(option);
-        });
+          Object.entries(statusLabels).forEach(([value, label]) => {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = label;
+            option.selected = value === tree.status;
+            status.append(option);
+          });
 
-        statusCell.append(status);
+          statusCell.append(status);
+        } else {
+          const status = document.createElement('span');
+          status.className = 'status-text';
+          status.dataset.status = tree.status;
+          status.textContent = statusLabels[tree.status];
+          statusCell.append(status);
+        }
         row.append(nameCell, groupCell, dateCell, statusCell);
         tableBody.append(row);
       });
@@ -688,6 +859,7 @@
       renderStats();
       renderTrees();
       renderActivity();
+      applyAccess();
     }
 
     const form = document.getElementById('tree-form');
@@ -757,6 +929,120 @@
 
     document.getElementById('tree-search').addEventListener('input', renderTrees);
     document.getElementById('status-filter').addEventListener('change', renderTrees);
+
+    const authDialog = document.getElementById('auth-dialog');
+    const authFeedback = document.getElementById('auth-feedback');
+    const setupForm = document.getElementById('setup-form');
+    const loginForm = document.getElementById('login-form');
+
+    document.getElementById('auth-open').addEventListener('click', openAuthDialog);
+    document.getElementById('auth-close').addEventListener('click', () => authDialog.close());
+    authDialog.addEventListener('click', (event) => {
+      if (event.target === authDialog) authDialog.close();
+    });
+
+    setupForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const formData = new FormData(setupForm);
+      const password = String(formData.get('password'));
+      if (password !== String(formData.get('confirmPassword'))) {
+        authFeedback.textContent = 'Пароли не совпадают.';
+        return;
+      }
+
+      const submitButton = setupForm.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      authFeedback.textContent = '';
+      try {
+        const result = await apiRequest('/api/auth/setup', {
+          method: 'POST',
+          body: JSON.stringify({ username: formData.get('username'), password })
+        });
+        currentUser = result.user;
+        setupRequired = false;
+        authDialog.close();
+        setupForm.reset();
+        await loadTracker();
+      } catch (error) {
+        authFeedback.textContent = error.message;
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+
+    loginForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const formData = new FormData(loginForm);
+      const submitButton = loginForm.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      authFeedback.textContent = '';
+      try {
+        const result = await apiRequest('/api/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ username: formData.get('username'), password: formData.get('password') })
+        });
+        currentUser = result.user;
+        setupRequired = false;
+        authDialog.close();
+        loginForm.reset();
+        await loadTracker();
+      } catch (error) {
+        authFeedback.textContent = error.message;
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+
+    document.getElementById('logout-button').addEventListener('click', async () => {
+      try {
+        await apiRequest('/api/auth/logout', { method: 'POST' });
+        currentUser = null;
+        await loadTracker();
+      } catch (error) {
+        document.getElementById('form-feedback').textContent = error.message;
+      }
+    });
+
+    document.getElementById('create-user-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const userForm = event.currentTarget;
+      const formData = new FormData(userForm);
+      const submitButton = userForm.querySelector('button[type="submit"]');
+      const feedback = document.getElementById('user-feedback');
+      submitButton.disabled = true;
+      feedback.textContent = '';
+      try {
+        await apiRequest('/api/users', {
+          method: 'POST',
+          body: JSON.stringify({
+            username: formData.get('username'),
+            password: formData.get('password'),
+            role: formData.get('role')
+          })
+        });
+        userForm.reset();
+        feedback.textContent = 'Аккаунт создан. Передайте логин и начальный пароль участнику отдельно.';
+        await loadAdminAccounts();
+      } catch (error) {
+        feedback.textContent = error.message;
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+
+    document.getElementById('account-list').addEventListener('click', async (event) => {
+      const removeButton = event.target.closest('.remove-user');
+      if (!removeButton || !window.confirm('Отозвать доступ этому аккаунту? Его активные сессии завершатся.')) return;
+
+      removeButton.disabled = true;
+      try {
+        await apiRequest(`/api/users/${encodeURIComponent(removeButton.dataset.userId)}`, { method: 'DELETE' });
+        document.getElementById('user-feedback').textContent = 'Доступ отозван.';
+        await loadAdminAccounts();
+      } catch (error) {
+        document.getElementById('user-feedback').textContent = error.message;
+      }
+    });
 
     loadTracker();
   </script>
