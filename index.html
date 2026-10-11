@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f4f7f2">
+  <meta name="description" content="My Tree CCU — трекер посадок, статусов и ухода за деревьями колледжа.">
+  <title>My Tree CCU — трекер посадок и ухода</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #f4f7f2;
+      --surface: #ffffff;
+      --ink: #18241e;
+      --muted: #77827a;
+      --line: #e4eae3;
+      --green: #26734b;
+      --green-dark: #174a34;
+      --green-pale: #e8f2e9;
+      --mint: #b9e5ca;
+      --lime: #d4e88d;
+      --amber: #bd8134;
+      --shadow: 0 14px 34px rgba(31, 55, 39, 0.06);
+      --radius: 16px;
+      --space-1: 8px;
+      --space-2: 16px;
+      --space-3: 24px;
+      --space-4: 32px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      margin: 0;
+      background-color: var(--page);
+      background-image: radial-gradient(#dfe8dc 0.7px, transparent 0.7px);
+      background-size: 19px 19px;
+      color: var(--ink);
+      font-family: Inter, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button { font: inherit; }
+
+    .shell {
+      width: min(1180px, calc(100% - 48px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      z-index: 10;
+      top: 0;
+      display: flex;
+      min-height: 84px;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      border-bottom: 1px solid rgba(31, 55, 39, 0.1);
+      background: rgba(244, 247, 242, .94);
+      backdrop-filter: blur(14px);
+    }
+
+    .topbar-inner { display: flex; width: min(1180px, calc(100% - 48px)); align-items: center; justify-content: space-between; gap: 24px; margin: 0 auto; }
+    .brand-link { color: inherit; text-decoration: none; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      border: 1px solid #d9e8d9;
+      border-radius: 13px;
+      background: #fff;
+      font-size: 23px;
+    }
+    .brand-name { margin: 0; font-size: 16px; font-weight: 750; letter-spacing: 0; }
+    .brand-caption { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+
+    .topbar-meta { display: flex; align-items: center; gap: 20px; }
+    .site-nav { display: flex; align-items: center; gap: 22px; }
+    .site-nav a { color: #536258; font-size: 12px; font-weight: 600; text-decoration: none; transition: color 160ms ease; }
+    .site-nav a:hover, .site-nav a:focus-visible { color: var(--green); }
+    .site-nav a:focus-visible { outline: 2px solid #8db998; outline-offset: 5px; border-radius: 2px; }
+    .initiative {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: #59675e;
+      font-size: 12px;
+    }
+    .initiative-mark {
+      display: grid;
+      width: 29px;
+      height: 29px;
+      place-items: center;
+      border-radius: 9px;
+      background: #e4eee2;
+      color: var(--green-dark);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .live-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 11px;
+      border: 1px solid #dce8dc;
+      border-radius: 999px;
+      background: rgba(255,255,255,.7);
+      color: #536258;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #4f9b62; }
+
+    main { padding: 30px 0 52px; }
+    .workspace-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; padding: 13px 0 7px; }
+    .workspace-heading h1 { font-size: 29px; }
+    .workspace-heading .intro-copy { max-width: 650px; line-height: 1.6; }
+    .heading-action { flex: 0 0 auto; }
+    .welcome-button { display: inline-flex; min-height: 40px; align-items: center; justify-content: center; padding: 0 14px; border: 1px solid var(--green); border-radius: 9px; background: var(--green); color: #fff; font-size: 11px; font-weight: 650; text-decoration: none; }
+    .welcome-button:hover { background: var(--green-dark); }
+    .welcome-button:focus-visible { outline: 3px solid #a9d4ad; outline-offset: 2px; }
+    .section-block { padding-top: 45px; scroll-margin-top: 104px; }
+    .section-block > .section-heading { margin-bottom: 18px; }
+    .section-heading h2 { font-size: 23px; }
+    .section-heading .section-note { font-size: 12px; }
+    .demo-notice { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 18px; padding: 8px 11px; border: 1px solid #eadfbd; border-radius: 8px; background: #fbf7e9; color: #776634; font-size: 10px; }
+    .demo-notice span { color: #aa8430; font-size: 13px; }
+    .page-intro {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--space-2);
+      margin-bottom: 24px;
+    }
+    .eyebrow {
+      margin: 0 0 9px;
+      color: var(--green);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+    }
+    h1 { margin: 0; font-size: 29px; font-weight: 720; letter-spacing: 0; }
+    .intro-copy { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+    .period {
+      color: #738078;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 20px; }
+    .stat-card {
+      position: relative;
+      min-height: 148px;
+      overflow: hidden;
+      padding: 21px 22px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      animation: rise-in .55s both;
+    }
+    .stat-card:nth-child(2) { animation-delay: .07s; }
+    .stat-card:nth-child(3) { animation-delay: .14s; }
+    .stat-top { display: flex; align-items: center; justify-content: space-between; }
+    .stat-label { max-width: 220px; color: #657168; font-size: 12px; line-height: 1.5; }
+    .stat-symbol {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border-radius: 11px;
+      background: var(--green-pale);
+      color: var(--green);
+      font-size: 18px;
+    }
+    .stat-value { margin-top: 13px; font-size: 33px; font-weight: 730; letter-spacing: 0; line-height: 1; }
+    .stat-foot { margin-top: 10px; color: #89938b; font-size: 11px; }
+    .stat-foot strong { color: var(--green); font-weight: 650; }
+
+    .impact {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1.35fr .65fr;
+      gap: 32px;
+      min-height: 254px;
+      overflow: hidden;
+      margin-top: 19px;
+      padding: 30px 34px;
+      border: 1px solid #214f37;
+      border-radius: 19px;
+      background-color: var(--green-dark);
+      background-image: linear-gradient(115deg, rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: 32px 32px;
+      color: #fff;
+      box-shadow: 0 18px 38px rgba(23, 74, 52, .16);
+      animation: rise-in .65s .12s both;
+    }
+    .impact-main, .impact-aside { position: relative; z-index: 1; }
+    .impact-kicker { margin: 0 0 11px; color: #b9d8c3; font-size: 11px; font-weight: 650; }
+    .impact-title { margin: 0; font-size: 17px; font-weight: 600; }
+    .co2-line { display: flex; align-items: baseline; gap: 10px; margin-top: 18px; }
+    .co2-value { font-size: 51px; font-weight: 740; letter-spacing: 0; line-height: 1; font-variant-numeric: tabular-nums; }
+    .co2-unit { color: #c0d7c7; font-size: 15px; }
+    .progress-meta { display: flex; justify-content: space-between; gap: 10px; margin: 22px 0 9px; color: #c1d4c6; font-size: 10px; }
+    .progress-track { height: 8px; overflow: hidden; border-radius: 99px; background: rgba(255,255,255,.16); }
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #a3d9aa, #d4e88d);
+      transition: width 850ms cubic-bezier(.2,.75,.25,1);
+    }
+    .impact-aside {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-left: 29px;
+      border-left: 1px solid rgba(255,255,255,.18);
+    }
+    .aside-label { margin: 0 0 17px; color: #b9d8c3; font-size: 10px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; }
+    .impact-fact { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; border-top: 1px solid rgba(255,255,255,.14); }
+    .impact-fact span { color: #d0ded3; font-size: 11px; }
+    .impact-fact strong { color: #fff; font-size: 16px; font-weight: 650; white-space: nowrap; }
+    .impact-foot { margin: 10px 0 0; color: #a9c6b2; font-size: 10px; }
+
+    .activity-section { margin-top: 0; }
+    .section-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    h2 { margin: 0; font-size: 18px; font-weight: 700; }
+    .section-note { margin: 6px 0 0; color: var(--muted); font-size: 11px; }
+    .tree-form {
+      display: grid;
+      grid-template-columns: 1.35fr .7fr 1fr 1fr auto;
+      align-items: end;
+      gap: 11px;
+      margin-bottom: 12px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .form-field { display: grid; gap: 6px; min-width: 0; }
+    .form-field span { color: #657168; font-size: 10px; font-weight: 650; }
+    .form-field input, .form-field select {
+      width: 100%;
+      min-height: 38px;
+      padding: 0 10px;
+      border: 1px solid #dce5dc;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 11px;
+    }
+    .form-field input:focus-visible, .form-field select:focus-visible, .status-select:focus-visible {
+      outline: 3px solid #b8d9bd;
+      outline-offset: 1px;
+    }
+    .add-tree-button {
+      display: inline-flex;
+      min-height: 38px;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 0 13px;
+      border: 1px solid var(--green);
+      border-radius: 9px;
+      background: var(--green);
+      color: #fff;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+    .add-tree-button:hover { background: var(--green-dark); }
+    .add-tree-button:focus-visible { outline: 3px solid #a9d4ad; outline-offset: 2px; }
+    .form-feedback { min-height: 17px; margin: 0 2px 10px; color: var(--green); font-size: 10px; }
+    .catalog-tools { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 12px; }
+    .catalog-filters { display: flex; flex: 1; gap: 9px; }
+    .catalog-search, .catalog-status { min-height: 40px; padding: 0 12px; border: 1px solid #dce5dc; border-radius: 9px; background: #fff; color: var(--ink); font: inherit; font-size: 11px; }
+    .catalog-search { width: min(100%, 330px); }
+    .catalog-search:focus-visible, .catalog-status:focus-visible { outline: 3px solid #b8d9bd; outline-offset: 1px; }
+    .catalog-count { flex: 0 0 auto; color: var(--muted); font-size: 11px; }
+    .empty-state { padding: 24px 15px; color: var(--muted); font-size: 12px; text-align: center; }
+    .activity-list { display: grid; gap: 9px; }
+    .activity-item { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+    .activity-mark { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 10px; background: var(--green-pale); color: var(--green); font-size: 15px; }
+    .activity-title { color: var(--ink); font-size: 12px; font-weight: 650; }
+    .activity-copy { margin-top: 4px; color: var(--muted); font-size: 10px; }
+    .activity-date { color: var(--muted); font-size: 10px; white-space: nowrap; }
+    .activity-empty { padding: 22px 15px; border: 1px dashed #d5dfd5; border-radius: 12px; color: var(--muted); font-size: 12px; text-align: center; }
+    .table-wrap { overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { height: 41px; padding: 0 20px; background: #fafcf9; color: #89938b; font-size: 10px; font-weight: 650; }
+    td { height: 58px; padding: 0 20px; border-top: 1px solid #edf0ec; color: #526057; font-size: 11px; }
+    .tree-name { color: var(--ink); font-weight: 650; }
+    .tree-type { display: inline-grid; width: 28px; height: 28px; place-items: center; margin-right: 9px; border-radius: 9px; background: #edf4ea; font-size: 15px; vertical-align: middle; }
+    .status-select {
+      max-width: 100%;
+      min-height: 30px;
+      padding: 0 8px;
+      border: 1px solid #d8e7d8;
+      border-radius: 999px;
+      background: #eef6ed;
+      color: #326744;
+      font: inherit;
+      font-size: 10px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+    .status-select[data-status="planted"] { border-color: #d8e7d8; background: #eef6ed; color: #326744; }
+    .status-select[data-status="watered"] { border-color: #cde4e1; background: #edf7f5; color: #286d65; }
+    .status-select[data-status="established"] { border-color: #dce8b8; background: #f4f7e8; color: #66772d; }
+    .footer { display: flex; justify-content: space-between; gap: 16px; padding: 20px 0 0; color: #929b94; font-size: 10px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
+
+    @keyframes rise-in { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+    @media (max-width: 760px) {
+      .shell { width: min(100% - 32px, 560px); }
+      .topbar { min-height: auto; }
+      .topbar-inner { width: min(100% - 32px, 560px); flex-wrap: wrap; padding: 12px 0; }
+      .topbar-meta { width: 100%; justify-content: space-between; }
+      .site-nav { order: 3; width: 100%; justify-content: space-between; gap: 12px; padding-top: 3px; }
+      .site-nav a { font-size: 11px; }
+      .initiative { display: none; }
+      main { padding-top: 28px; }
+      .workspace-heading { align-items: flex-start; flex-direction: column; }
+      .stats-grid { grid-template-columns: 1fr; gap: 10px; }
+      .stat-card { min-height: 124px; padding: 17px 19px; }
+      .stat-value { margin-top: 9px; font-size: 30px; }
+      .impact { grid-template-columns: 1fr; gap: 20px; padding: 25px 23px; }
+      .impact-aside { padding: 17px 0 0; border-top: 1px solid rgba(255,255,255,.18); border-left: 0; }
+      .aside-label { margin-bottom: 9px; }
+      .impact-fact { padding: 9px 0; }
+      .activity-section { margin-top: 29px; }
+      .tree-form { grid-template-columns: 1fr 1fr; }
+      .add-tree-button { grid-column: 1 / -1; }
+      .table-wrap { overflow: visible; border: 0; background: transparent; box-shadow: none; }
+      table, tbody { display: block; }
+      thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); clip-path: inset(50%); }
+      tr { display: grid; grid-template-columns: 1fr auto; gap: 9px 12px; margin-bottom: 9px; padding: 14px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface); box-shadow: var(--shadow); }
+      td { display: block; height: auto; padding: 0; border: 0; font-size: 11px; }
+      td:first-child { grid-column: 1 / -1; }
+      td:nth-child(2)::before { content: "Кем посажено: "; color: #929b94; }
+      td:nth-child(3)::before { content: "Дата: "; color: #929b94; }
+      td:nth-child(4) { grid-column: 2; grid-row: 2 / span 2; align-self: center; }
+      .footer { flex-direction: column; gap: 6px; }
+    }
+    @media (max-width: 420px) {
+      .shell { width: calc(100% - 24px); }
+      .brand-caption { max-width: 185px; font-size: 10px; }
+      .live-label { padding: 7px 9px; font-size: 10px; }
+      .page-intro { align-items: flex-start; flex-direction: column; }
+      h1 { font-size: 25px; }
+      .co2-value { font-size: 43px; }
+      .section-heading { align-items: flex-start; }
+      .tree-form { grid-template-columns: 1fr; padding: 14px; }
+      .add-tree-button { grid-column: auto; }
+      .catalog-tools { align-items: stretch; flex-direction: column; }
+      .catalog-filters { flex-direction: column; }
+      .catalog-search { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <!-- Шапка проекта и контекст экологической инициативы -->
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand-link" href="#overview" aria-label="My Tree CCU — обзор трекера">
+          <div class="brand">
+            <span class="brand-mark" aria-hidden="true">🌳</span>
+            <div>
+              <p class="brand-name">My Tree CCU</p>
+              <p class="brand-caption">Трекер посадок и ухода</p>
+            </div>
+          </div>
+        </a>
+        <nav class="site-nav" aria-label="Основная навигация">
+          <a href="#overview">Обзор</a>
+          <a href="#grove">Каталог</a>
+          <a href="#care-log">Журнал</a>
+          <a href="#add-tree">Добавить</a>
+        </nav>
+        <div class="topbar-meta">
+          <div class="initiative" aria-label="Чистый Казахстан">
+            <span class="initiative-mark" aria-hidden="true">ТК</span>
+            <span>Таза Казахстан</span>
+          </div>
+          <span class="live-label" id="server-status" data-connected="false" aria-live="polite"><span class="live-dot" aria-hidden="true"></span>Подключение к серверу</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="workspace-heading" id="overview" aria-labelledby="page-title">
+        <div><p class="eyebrow">УЧЁТ ПОСАДОК · CCU</p><h1 id="page-title">Трекер озеленения</h1><p class="intro-copy">Деревья кампуса, статусы ухода и последние изменения в одном месте.</p></div>
+        <a class="welcome-button heading-action" href="#add-tree">＋ Новая посадка</a>
+      </section>
+
+      <section class="section-block" aria-labelledby="stats-title">
+        <div class="section-heading">
+          <div>
+            <h2 id="stats-title">Наш вклад в кампус</h2>
+            <p class="section-note">Сводка по деревьям и уходу</p>
+          </div>
+          <span class="period">Демо-сценарий · 2026</span>
+        </div>
+        <p class="demo-notice"><span aria-hidden="true">ⓘ</span>Показатели и примеры посадок демонстрационные, не фактические данные колледжа.</p>
+        <div class="stats-grid" aria-label="Демонстрационные показатели проекта">
+          <article class="stat-card">
+            <div class="stat-top"><span class="stat-label">Всего посажено деревьев</span><span class="stat-symbol" aria-hidden="true">🌱</span></div>
+            <div class="stat-value" id="trees-count">—</div>
+            <div class="stat-foot"><strong>В кампусе CCU</strong> за этот сезон</div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-top"><span class="stat-label">Студентов / групп-участников</span><span class="stat-symbol" aria-hidden="true">♧</span></div>
+            <div class="stat-value" id="participants-count">—</div>
+            <div class="stat-foot">Уникальные посадившие в списке</div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-top"><span class="stat-label">Деревьев на контроле</span><span class="stat-symbol" aria-hidden="true">✓</span></div>
+            <div class="stat-value" id="care-count">—</div>
+            <div class="stat-foot">Полив и регулярный уход</div>
+          </article>
+        </div>
+      </section>
+
+      <section class="impact section-block" id="impact" aria-labelledby="impact-title">
+        <div class="impact-main">
+          <p class="impact-kicker">Наш измеримый вклад</p>
+          <h2 class="impact-title" id="impact-title">CO₂, поглощённое деревьями CCU</h2>
+          <div class="co2-line" aria-live="polite"><span class="co2-value" id="co2-count">0</span><span class="co2-unit">кг CO₂</span></div>
+          <div class="progress-meta"><span>Демо-цель сезона</span><span><strong id="goal-progress">0</strong> из 2 000 кг</span></div>
+          <div class="progress-track" role="progressbar" aria-label="Прогресс к демонстрационной цели по поглощению CO2" aria-valuemin="0" aria-valuemax="2000" aria-valuenow="0"><div class="progress-fill" id="progress-fill"></div></div>
+        </div>
+        <aside class="impact-aside" aria-label="Дополнительный экологический эффект">
+          <p class="aside-label">Эффект кампании</p>
+          <div class="impact-fact"><span>Прижилось</span><strong id="survival-count">—%</strong></div>
+          <div class="impact-fact"><span>Демо-норма CO₂</span><strong id="co2-rate">22 кг / год</strong></div>
+          <p class="impact-foot">Примерный расчёт, а не подтверждённые данные: 22 кг на дерево в год.</p>
+        </aside>
+      </section>
+
+      <section class="activity-section section-block" id="grove" aria-labelledby="activity-title">
+        <div class="section-heading">
+          <div><h2 id="activity-title">Деревья нашего кампуса</h2><p class="section-note">Каталог посадок: ищите дерево и обновляйте его статус</p></div>
+        </div>
+        <div class="catalog-tools">
+          <div class="catalog-filters">
+            <label class="sr-only" for="tree-search">Поиск по деревьям и посадившим</label>
+            <input class="catalog-search" id="tree-search" type="search" placeholder="Поиск по имени дерева или группе">
+            <label class="sr-only" for="status-filter">Фильтр по статусу</label>
+            <select class="catalog-status" id="status-filter">
+              <option value="all">Все статусы</option>
+              <option value="planted">Посажено</option>
+              <option value="watered">Полито</option>
+              <option value="established">Прижилось</option>
+            </select>
+          </div>
+          <span class="catalog-count" id="catalog-count" aria-live="polite"></span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Дерево</th><th scope="col">Кем посажено</th><th scope="col">Дата</th><th scope="col">Статус ухода</th></tr></thead>
+            <tbody id="trees-table-body"></tbody>
+          </table>
+          <p class="empty-state" id="empty-state" hidden>По вашему запросу деревьев не найдено.</p>
+        </div>
+      </section>
+
+      <section class="section-block" id="add-tree" aria-labelledby="add-tree-title">
+        <div class="section-heading"><div><h2 id="add-tree-title">Добавить посадку</h2><p class="section-note">Заполните карточку дерева и отметьте его текущий статус.</p></div></div>
+        <form class="tree-form" id="tree-form">
+          <label class="form-field"><span>Имя дерева</span><input id="tree-name" name="name" type="text" maxlength="48" placeholder="Дуб «CCU-2»" required></label>
+          <label class="form-field"><span>Кем посажено</span><input id="tree-planted-by" name="plantedBy" type="text" maxlength="32" placeholder="Э-21 или имя студента" required></label>
+          <label class="form-field"><span>Дата посадки</span><input id="tree-date" name="date" type="date" required></label>
+          <label class="form-field"><span>Статус</span><select id="tree-status" name="status" required><option value="planted">Посажено</option><option value="watered">Полито</option><option value="established">Прижилось</option></select></label>
+          <button class="add-tree-button" type="submit"><span aria-hidden="true">＋</span>Добавить дерево</button>
+        </form>
+        <p class="form-feedback" id="form-feedback" aria-live="polite">Записи отправляются на сервер проекта.</p>
+      </section>
+
+      <section class="section-block" id="care-log" aria-labelledby="care-title">
+        <div class="section-heading"><div><h2 id="care-title">Журнал изменений</h2><p class="section-note">История добавления посадок и обновления статусов ухода</p></div></div>
+        <div class="activity-list" id="activity-list" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>My Tree CCU · Трекер озеленения колледжа</span>
+      <span>Демо-данные · записи и журнал сохраняются на сервере</span>
+    </footer>
+  </div>
+
+  <script>
+    // Все числа ниже демонстрационные и могут быть заменены данными колледжа.
+    const co2Target = 2000;
+    const annualCo2PerTree = 22;
+    const statusLabels = {
+      planted: 'Посажено',
+      watered: 'Полито',
+      established: 'Прижилось'
+    };
+    let animationFrame;
+    let trees = [];
+    let activity = [];
+
+    const formatNumber = (value) => new Intl.NumberFormat('ru-RU').format(value);
+
+    async function apiRequest(path, options = {}) {
+      const response = await fetch(path, {
+        ...options,
+        headers: {
+          ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+          ...options.headers
+        }
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || 'Не удалось выполнить запрос к серверу.');
+      return result;
+    }
+
+    function setServerStatus(connected) {
+      const status = document.getElementById('server-status');
+      status.dataset.connected = String(connected);
+      status.lastChild.textContent = connected ? 'Сервер подключён' : 'Сервер недоступен';
+    }
+
+    async function loadTracker() {
+      try {
+        const store = await apiRequest('/api/trees');
+        trees = store.trees;
+        activity = store.activity;
+        setServerStatus(true);
+        renderDashboard();
+      } catch (error) {
+        trees = [];
+        activity = [];
+        setServerStatus(false);
+        renderDashboard();
+        document.getElementById('form-feedback').textContent = 'Не удалось связаться с сервером. Запустите проект командой npm start.';
+      }
+    }
+
+    // Сглаживание числового перехода без сторонних библиотек.
+    function animateCounter(element, from, to, duration = 1100) {
+      cancelAnimationFrame(animationFrame);
+      if (document.hidden) {
+        element.textContent = formatNumber(to);
+        return;
+      }
+
+      const start = performance.now();
+
+      function frame(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(from + (to - from) * eased);
+        element.textContent = formatNumber(current);
+
+        if (progress < 1) animationFrame = requestAnimationFrame(frame);
+      }
+
+      animationFrame = requestAnimationFrame(frame);
+    }
+
+    function renderStats() {
+      const co2 = trees.length * annualCo2PerTree;
+      const participants = new Set(trees.map((tree) => tree.plantedBy.trim().toLocaleLowerCase('ru-RU')));
+      const care = trees.filter((tree) => tree.status !== 'established').length;
+      const established = trees.filter((tree) => tree.status === 'established').length;
+      const survival = trees.length ? Math.round((established / trees.length) * 100) : 0;
+      const co2Element = document.getElementById('co2-count');
+      const previousCo2 = Number(co2Element.dataset.value || 0);
+      const progress = Math.min((co2 / co2Target) * 100, 100);
+
+      document.getElementById('trees-count').textContent = formatNumber(trees.length);
+      document.getElementById('participants-count').textContent = formatNumber(participants.size);
+      document.getElementById('care-count').textContent = formatNumber(care);
+      document.getElementById('survival-count').textContent = `${survival}%`;
+      document.getElementById('goal-progress').textContent = formatNumber(co2);
+      co2Element.dataset.value = String(co2);
+      animateCounter(co2Element, previousCo2, co2);
+
+      const progressBar = document.getElementById('progress-fill');
+      progressBar.style.width = `${progress}%`;
+      progressBar.parentElement.setAttribute('aria-valuenow', String(co2));
+      progressBar.parentElement.setAttribute('aria-valuetext', `${formatNumber(co2)} из ${formatNumber(co2Target)} килограммов`);
+    }
+
+    function renderTrees() {
+      const tableBody = document.getElementById('trees-table-body');
+      const query = document.getElementById('tree-search').value.trim().toLocaleLowerCase('ru-RU');
+      const selectedStatus = document.getElementById('status-filter').value;
+      const matchingTrees = trees.filter((tree) => {
+        const matchesQuery = `${tree.name} ${tree.plantedBy}`.toLocaleLowerCase('ru-RU').includes(query);
+        const matchesStatus = selectedStatus === 'all' || tree.status === selectedStatus;
+        return matchesQuery && matchesStatus;
+      });
+      const sortedTrees = [...matchingTrees].sort((first, second) => second.date.localeCompare(first.date));
+      tableBody.replaceChildren();
+      document.getElementById('catalog-count').textContent = `Показано ${sortedTrees.length} из ${trees.length}`;
+      document.getElementById('empty-state').hidden = sortedTrees.length > 0;
+
+      sortedTrees.forEach((tree) => {
+        const row = document.createElement('tr');
+        const nameCell = document.createElement('td');
+        const icon = document.createElement('span');
+        const name = document.createElement('span');
+        icon.className = 'tree-type';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = '🌳';
+        name.className = 'tree-name';
+        name.textContent = tree.name;
+        nameCell.append(icon, name);
+
+        const groupCell = document.createElement('td');
+        groupCell.textContent = tree.plantedBy;
+        const dateCell = document.createElement('td');
+        dateCell.textContent = new Intl.DateTimeFormat('ru-RU', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(`${tree.date}T12:00:00`));
+        const statusCell = document.createElement('td');
+        const status = document.createElement('select');
+        status.className = 'status-select';
+        status.dataset.treeId = tree.id;
+        status.dataset.status = tree.status;
+        status.setAttribute('aria-label', `Статус: ${tree.name}`);
+
+        Object.entries(statusLabels).forEach(([value, label]) => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = label;
+          option.selected = value === tree.status;
+          status.append(option);
+        });
+
+        statusCell.append(status);
+        row.append(nameCell, groupCell, dateCell, statusCell);
+        tableBody.append(row);
+      });
+    }
+
+    function renderActivity() {
+      const activityList = document.getElementById('activity-list');
+      activityList.replaceChildren();
+
+      if (activity.length === 0) {
+        const emptyMessage = document.createElement('p');
+        emptyMessage.className = 'activity-empty';
+        emptyMessage.textContent = 'История пока пуста. Добавьте посадку или измените статус дерева, чтобы начать учёт.';
+        activityList.append(emptyMessage);
+        return;
+      }
+
+      activity.slice(0, 8).forEach((entry) => {
+        const item = document.createElement('article');
+        const mark = document.createElement('span');
+        const details = document.createElement('div');
+        const title = document.createElement('div');
+        const copy = document.createElement('div');
+        const date = document.createElement('time');
+        item.className = 'activity-item';
+        mark.className = 'activity-mark';
+        mark.setAttribute('aria-hidden', 'true');
+        mark.textContent = entry.action.startsWith('Статус') ? '↻' : '+';
+        title.className = 'activity-title';
+        title.textContent = entry.action;
+        copy.className = 'activity-copy';
+        copy.textContent = `${entry.treeName}${entry.plantedBy ? ` · ${entry.plantedBy}` : ''}`;
+        date.className = 'activity-date';
+        date.dateTime = entry.timestamp;
+        date.textContent = new Intl.DateTimeFormat('ru-RU', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(entry.timestamp));
+        details.append(title, copy);
+        item.append(mark, details, date);
+        activityList.append(item);
+      });
+    }
+
+    function renderDashboard() {
+      renderStats();
+      renderTrees();
+      renderActivity();
+    }
+
+    const form = document.getElementById('tree-form');
+    const dateInput = document.getElementById('tree-date');
+    const today = new Date();
+    const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    dateInput.max = localToday;
+    dateInput.value = localToday;
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const formData = new FormData(form);
+      const tree = {
+        name: String(formData.get('name')).trim(),
+        plantedBy: String(formData.get('plantedBy')).trim(),
+        date: String(formData.get('date')),
+        status: String(formData.get('status'))
+      };
+
+      if (!tree.name || !tree.plantedBy || !tree.date || !statusLabels[tree.status]) {
+        form.reportValidity();
+        return;
+      }
+
+      const submitButton = form.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      try {
+        const result = await apiRequest('/api/trees', { method: 'POST', body: JSON.stringify(tree) });
+        trees.unshift(result.tree);
+        activity.unshift(result.activity);
+        document.getElementById('tree-search').value = '';
+        document.getElementById('status-filter').value = 'all';
+        renderDashboard();
+        form.reset();
+        dateInput.value = localToday;
+        document.getElementById('form-feedback').textContent = 'Посадка добавлена и сохранена на сервере.';
+      } catch (error) {
+        document.getElementById('form-feedback').textContent = error.message;
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+
+    document.getElementById('trees-table-body').addEventListener('change', async (event) => {
+      const statusSelect = event.target.closest('.status-select');
+      if (!statusSelect) return;
+
+      const tree = trees.find((item) => item.id === statusSelect.dataset.treeId);
+      if (!tree) return;
+
+      const nextStatus = statusSelect.value;
+      statusSelect.disabled = true;
+      try {
+        const result = await apiRequest(`/api/trees/${encodeURIComponent(tree.id)}/status`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: nextStatus })
+        });
+        Object.assign(tree, result.tree);
+        if (result.activity) activity.unshift(result.activity);
+        renderDashboard();
+        document.getElementById('form-feedback').textContent = 'Статус обновлён и сохранён на сервере.';
+      } catch (error) {
+        renderDashboard();
+        document.getElementById('form-feedback').textContent = error.message;
+      }
+    });
+
+    document.getElementById('tree-search').addEventListener('input', renderTrees);
+    document.getElementById('status-filter').addEventListener('change', renderTrees);
+
+    loadTracker();
+  </script>
+</body>
+</html>
