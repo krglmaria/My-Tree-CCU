@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#f4f7f2">
   <meta name="description" content="My Tree CCU — трекер посадок, статусов и ухода за деревьями колледжа.">
   <title>My Tree CCU — трекер посадок и ухода</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <style>
     :root {
       color-scheme: light;
@@ -134,6 +135,22 @@
     .section-heading .section-note { font-size: 12px; }
     .demo-notice { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 18px; padding: 8px 11px; border: 1px solid #eadfbd; border-radius: 8px; background: #fbf7e9; color: #776634; font-size: 10px; }
     .demo-notice span { color: #aa8430; font-size: 13px; }
+    .campus-map-panel { overflow: hidden; border: 1px solid var(--line); border-radius: 15px; background: #fff; box-shadow: var(--shadow); }
+    #campus-map { width: 100%; height: 440px; background: #e8eee8; }
+    .map-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 13px 16px; border-bottom: 1px solid #edf0ec; }
+    .map-location { color: #4d5c52; font-size: 11px; }
+    .map-location strong { color: var(--ink); font-weight: 700; }
+    .map-legend { display: flex; flex-wrap: wrap; gap: 12px; color: #657168; font-size: 10px; }
+    .map-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+    .map-legend-dot { width: 9px; height: 9px; flex: 0 0 auto; border: 2px solid #fff; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 1px #75977d; }
+    .map-legend-dot.proposal { background: #c48832; box-shadow: 0 0 0 1px #c48832; }
+    .map-note { margin: 0; padding: 11px 16px; border-top: 1px solid #edf0ec; color: #727e75; font-size: 10px; line-height: 1.6; }
+    .map-note strong { color: #765f30; }
+    .campus-pin { display: grid; width: 34px; height: 34px; place-items: center; border: 3px solid #fff; border-radius: 50% 50% 50% 4px; background: #26734b; box-shadow: 0 2px 8px rgba(19, 48, 30, .34); color: #fff; font-size: 10px; font-weight: 800; transform: rotate(-45deg); }
+    .campus-pin span { transform: rotate(45deg); }
+    .proposal-pin { display: grid; width: 27px; height: 27px; place-items: center; border: 3px solid #fff; border-radius: 50%; background: #c48832; box-shadow: 0 2px 7px rgba(75, 51, 13, .3); color: #fff; font-size: 10px; font-weight: 800; }
+    .map-popup-title { margin: 0 0 5px; color: var(--ink); font-size: 12px; font-weight: 750; }
+    .map-popup-copy { margin: 0; color: #667269; font-size: 10px; line-height: 1.55; }
     [hidden] { display: none !important; }
     .auth-dialog { width: min(440px, calc(100% - 30px)); max-height: min(90vh, 720px); overflow: auto; padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: #fff; color: var(--ink); box-shadow: 0 25px 80px rgba(24, 36, 30, .22); }
     .auth-dialog::backdrop { background: rgba(16, 33, 24, .48); backdrop-filter: blur(4px); }
@@ -364,7 +381,7 @@
       .auth-controls { gap: 5px; }
       .auth-button { min-height: 30px; padding: 0 8px; font-size: 9px; }
       .role-pill { display: none; }
-      .site-nav { order: 3; width: 100%; justify-content: space-between; gap: 12px; padding-top: 3px; }
+      .site-nav { order: 3; width: 100%; justify-content: space-between; gap: 10px; padding-top: 3px; }
       .site-nav a { font-size: 11px; }
       .initiative { display: none; }
       main { padding-top: 28px; }
@@ -376,6 +393,9 @@
       .impact-aside { padding: 17px 0 0; border-top: 1px solid rgba(255,255,255,.18); border-left: 0; }
       .aside-label { margin-bottom: 9px; }
       .impact-fact { padding: 9px 0; }
+      #campus-map { height: 360px; }
+      .map-toolbar { align-items: flex-start; flex-direction: column; gap: 9px; }
+      .map-legend { gap: 9px; }
       .activity-section { margin-top: 29px; }
       .tree-form { grid-template-columns: 1fr 1fr; }
       .add-tree-button { grid-column: 1 / -1; }
@@ -425,6 +445,7 @@
         </a>
         <nav class="site-nav" aria-label="Основная навигация">
           <a href="#overview">Обзор</a>
+          <a href="#campus-map-section">Карта</a>
           <a href="#grove">Каталог</a>
           <a href="#care-log">Журнал</a>
           <a href="#add-tree">Добавить</a>
@@ -514,6 +535,27 @@
         </aside>
       </section>
 
+      <section class="section-block" id="campus-map-section" aria-labelledby="campus-map-title">
+        <div class="section-heading">
+          <div>
+            <h2 id="campus-map-title">Карта кампуса ККУ</h2>
+            <p class="section-note">Колледж Каспийского Университета · точки для обсуждения озеленения</p>
+          </div>
+          <a class="period" href="https://ccu.edu.kz/" target="_blank" rel="noreferrer">Сайт ККУ ↗</a>
+        </div>
+        <div class="campus-map-panel">
+          <div class="map-toolbar">
+            <span class="map-location"><strong>ККУ</strong> · Алматы, проспект Сейфуллина, 521</span>
+            <div class="map-legend" aria-label="Обозначения карты">
+              <span class="map-legend-item"><span class="map-legend-dot" aria-hidden="true"></span>Кампус ККУ</span>
+              <span class="map-legend-item"><span class="map-legend-dot proposal" aria-hidden="true"></span>Предложенная точка</span>
+            </div>
+          </div>
+          <div id="campus-map" role="application" aria-label="Интерактивная карта кампуса Колледжа Каспийского Университета"></div>
+          <p class="map-note"><strong>Важно:</strong> оранжевые метки — демонстрационные предложения для осмотра, а не подтверждённые места посадки. Перед посадкой проверьте фактическую территорию, коммуникации и получите согласование администрации.</p>
+        </div>
+      </section>
+
       <section class="activity-section section-block" id="grove" aria-labelledby="activity-title">
         <div class="section-heading">
           <div><h2 id="activity-title">Деревья нашего кампуса</h2><p class="section-note">Каталог посадок: ищите дерево и обновляйте его статус</p></div>
@@ -577,6 +619,7 @@
     </footer>
   </div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script>
     // Все числа ниже демонстрационные и могут быть заменены данными колледжа.
     const co2Target = 2000;
@@ -586,6 +629,12 @@
       watered: 'Полито',
       established: 'Прижилось'
     };
+    const campusCoordinates = [43.256802, 76.9320544];
+    const proposedPlantingSites = [
+      { id: 'A', name: 'Предлагаемая зона A', coordinates: [43.25702, 76.93228] },
+      { id: 'B', name: 'Предлагаемая зона B', coordinates: [43.25659, 76.93230] },
+      { id: 'C', name: 'Предлагаемая зона C', coordinates: [43.25676, 76.93176] }
+    ];
     let animationFrame;
     let trees = [];
     let activity = [];
@@ -593,6 +642,59 @@
     let setupRequired = false;
 
     const formatNumber = (value) => new Intl.NumberFormat('ru-RU').format(value);
+
+    function createMapPopup(titleText, copyText) {
+      const content = document.createElement('div');
+      const title = document.createElement('p');
+      const copy = document.createElement('p');
+      title.className = 'map-popup-title';
+      title.textContent = titleText;
+      copy.className = 'map-popup-copy';
+      copy.textContent = copyText;
+      content.append(title, copy);
+      return content;
+    }
+
+    function initializeCampusMap() {
+      const mapElement = document.getElementById('campus-map');
+      if (!window.L) {
+        mapElement.textContent = 'Не удалось загрузить карту. Проверьте подключение к интернету и обновите страницу.';
+        mapElement.setAttribute('role', 'status');
+        return;
+      }
+
+      const map = L.map(mapElement, { scrollWheelZoom: false }).setView(campusCoordinates, 18);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>'
+      }).addTo(map);
+
+      const campusIcon = L.divIcon({
+        className: '',
+        html: '<span class="campus-pin"><span>К</span></span>',
+        iconSize: [34, 34],
+        iconAnchor: [17, 31],
+        popupAnchor: [0, -29]
+      });
+      L.marker(campusCoordinates, { icon: campusIcon, title: 'Колледж Каспийского Университета' })
+        .addTo(map)
+        .bindPopup(createMapPopup('Колледж Каспийского Университета', 'Алматы, проспект Сейфуллина, 521. Точка кампуса указана по адресу.'));
+
+      proposedPlantingSites.forEach((site) => {
+        const proposalIcon = L.divIcon({
+          className: '',
+          html: `<span class="proposal-pin">${site.id}</span>`,
+          iconSize: [27, 27],
+          iconAnchor: [13, 13],
+          popupAnchor: [0, -11]
+        });
+        L.marker(site.coordinates, { icon: proposalIcon, title: site.name })
+          .addTo(map)
+          .bindPopup(createMapPopup(site.name, 'Условная точка для осмотра. Проверьте фактическую территорию и согласуйте место с администрацией ККУ.'));
+      });
+
+      requestAnimationFrame(() => map.invalidateSize());
+    }
 
     async function apiRequest(path, options = {}) {
       const response = await fetch(path, {
@@ -1044,6 +1146,7 @@
       }
     });
 
+    initializeCampusMap();
     loadTracker();
   </script>
 </body>
