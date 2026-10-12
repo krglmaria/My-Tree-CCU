@@ -202,7 +202,8 @@ API обслуживается тем же Node.js сервером. JSON-зап
 | Файл/папка | Назначение |
 | --- | --- |
 | `index.html` | Frontend: HTML, CSS, адаптивная верстка, формы, карта Leaflet, поиск, фильтр и вызовы API. |
-| `server.mjs` | Локальный HTTP-сервер, схема PostgreSQL, API, авторизация, долговечные сессии и права. |
+| `server.mjs` | Локальный HTTP-сервер и default handler для Vercel. |
+| `lib/database.mjs` | PostgreSQL pool и создание таблиц. |
 | `api/[...path].mjs` | Vercel serverless handler для `/api/*`. |
 | `scripts/migrate-sqlite-to-postgres.mjs` | Одноразовый перенос старых локальных данных. |
 | `package.json` | Команды запуска/миграции и драйвер PostgreSQL `pg`. |

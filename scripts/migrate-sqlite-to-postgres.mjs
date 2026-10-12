@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 
 process.env.VERCEL ||= '1';
-const { ensureDatabase, pool } = await import('../server.mjs');
+const { ensureDatabase, pool } = await import('../lib/database.mjs');
 const sourceFile = resolve(process.env.MYTREE_DATABASE_FILE || 'data/my-tree-ccu.sqlite');
 
 function asUuid(value) {
