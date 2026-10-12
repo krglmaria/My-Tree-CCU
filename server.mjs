@@ -519,6 +519,16 @@ async function handleRequest(request, response) {
       await handleApi(request, response, url);
       return;
     }
+    if (request.method === 'GET' && url.pathname === '/og-image.png') {
+      const image = readFileSync(join(projectDirectory, 'og-image.png'));
+      response.writeHead(200, {
+        'Content-Type': 'image/png',
+        'Cache-Control': 'public, max-age=86400',
+        'X-Content-Type-Options': 'nosniff'
+      });
+      response.end(image);
+      return;
+    }
     if (request.method === 'GET' && (url.pathname === '/' || url.pathname === '/index.html')) {
       const html = readFileSync(join(projectDirectory, 'index.html'));
       response.writeHead(200, {
