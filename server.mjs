@@ -1,19 +1,15 @@
 import { randomBytes, randomUUID, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
 import { createServer } from 'node:http';
-import { existsSync, mkdirSync, readFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
-import { DatabaseSync } from 'node:sqlite';
-import { promisify } from 'node:util';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
+import pg from 'pg';
 
+const { Pool } = pg;
+pg.types.setTypeParser(1082, (value) => value);
 const scrypt = promisify(scryptCallback);
 const projectDirectory = dirname(fileURLToPath(import.meta.url));
-const legacyDataFile = process.env.MYTREE_DATA_FILE
-  ? resolve(process.env.MYTREE_DATA_FILE)
-  : join(projectDirectory, 'data', 'store.json');
-const databaseFile = process.env.MYTREE_DATABASE_FILE
-  ? resolve(process.env.MYTREE_DATABASE_FILE)
-  : join(projectDirectory, 'data', 'my-tree-ccu.sqlite');
 const port = Number(process.env.PORT) || 3000;
 const statuses = new Set(['planted', 'watered', 'established']);
 const maxRequestBytes = 16 * 1024;
@@ -21,128 +17,60 @@ const maxActivityEntries = 100;
 const sessionCookieName = 'mytree_session';
 const sessionLifetimeMs = 8 * 60 * 60 * 1000;
 const passwordParameters = { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
-const sessions = new Map();
-const loginAttempts = new Map();
-let setupInProgress = false;
+export const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  max: process.env.VERCEL === '1' ? 1 : 5,
+  idleTimeoutMillis: 10000,
+  connectionTimeoutMillis: 5000
+});
+let schemaReady;
 
-mkdirSync(dirname(databaseFile), { recursive: true });
-const database = new DatabaseSync(databaseFile);
-database.exec(`
-  PRAGMA foreign_keys = ON;
-  PRAGMA journal_mode = WAL;
-  PRAGMA busy_timeout = 5000;
-  CREATE TABLE IF NOT EXISTS app_meta (
-    key TEXT PRIMARY KEY,
-    value TEXT NOT NULL
-  );
-  CREATE TABLE IF NOT EXISTS trees (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    planted_by TEXT NOT NULL,
-    planted_on TEXT NOT NULL,
-    status TEXT NOT NULL CHECK (status IN ('planted', 'watered', 'established'))
-  );
-  CREATE TABLE IF NOT EXISTS activity (
-    id TEXT PRIMARY KEY,
-    tree_name TEXT NOT NULL,
-    planted_by TEXT NOT NULL,
-    action TEXT NOT NULL,
-    timestamp TEXT NOT NULL
-  );
-  CREATE TABLE IF NOT EXISTS users (
-    id TEXT PRIMARY KEY,
-    username TEXT NOT NULL UNIQUE,
-    role TEXT NOT NULL CHECK (role IN ('admin', 'editor', 'viewer')),
-    salt TEXT NOT NULL,
-    password_hash TEXT NOT NULL,
-    password_parameters TEXT NOT NULL,
-    created_at TEXT NOT NULL
-  );
-  CREATE INDEX IF NOT EXISTS activity_timestamp_idx ON activity(timestamp DESC);
-`);
-
-const demoStore = {
-  trees: [
-    { id: 'seed-1', name: 'Дуб «CCU-1»', plantedBy: 'Э-21', date: '2026-10-08', status: 'planted' },
-    { id: 'seed-2', name: 'Берёза «Самал»', plantedBy: 'ИТ-22', date: '2026-10-02', status: 'watered' },
-    { id: 'seed-3', name: 'Клён «Жасыл»', plantedBy: 'Д-21', date: '2026-09-25', status: 'established' },
-    { id: 'seed-4', name: 'Яблоня «Үміт»', plantedBy: 'Э-23', date: '2026-09-18', status: 'established' }
-  ],
-  activity: []
-};
-
-function importLegacyData() {
-  const migration = database.prepare('SELECT value FROM app_meta WHERE key = ?').get('json-import-v1');
-  if (migration) return;
-
-  let store = demoStore;
-  if (existsSync(legacyDataFile)) {
-    store = JSON.parse(readFileSync(legacyDataFile, 'utf8'));
-  }
-
-  store.trees ||= [];
-  store.activity ||= [];
-  store.users ||= [];
-
-  const insertTree = database.prepare('INSERT OR IGNORE INTO trees (id, name, planted_by, planted_on, status) VALUES (?, ?, ?, ?, ?)');
-  const insertActivity = database.prepare('INSERT OR IGNORE INTO activity (id, tree_name, planted_by, action, timestamp) VALUES (?, ?, ?, ?, ?)');
-  const insertUser = database.prepare('INSERT OR IGNORE INTO users (id, username, role, salt, password_hash, password_parameters, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)');
-
-  database.exec('BEGIN IMMEDIATE');
-  try {
-    for (const tree of store.trees) {
-      insertTree.run(tree.id, tree.name, tree.plantedBy || tree.group || '', tree.date, tree.status);
-    }
-    for (const entry of store.activity) {
-      insertActivity.run(entry.id, entry.treeName, entry.plantedBy || '', entry.action, entry.timestamp);
-    }
-    for (const user of store.users) {
-      insertUser.run(
-        user.id,
-        user.username,
-        user.role,
-        user.salt,
-        user.passwordHash,
-        JSON.stringify(user.passwordParameters || passwordParameters),
-        user.createdAt || new Date().toISOString()
-      );
-    }
-    database.prepare('INSERT INTO app_meta (key, value) VALUES (?, ?)').run('json-import-v1', new Date().toISOString());
-    database.exec('COMMIT');
-  } catch (error) {
-    database.exec('ROLLBACK');
+export async function ensureDatabase() {
+  if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL не настроен.');
+  schemaReady ||= pool.query(`
+    CREATE TABLE IF NOT EXISTS trees (
+      id UUID PRIMARY KEY,
+      name VARCHAR(48) NOT NULL,
+      planted_by VARCHAR(32) NOT NULL,
+      planted_on DATE NOT NULL,
+      status TEXT NOT NULL CHECK (status IN ('planted', 'watered', 'established')),
+      care_notes VARCHAR(1000) NOT NULL DEFAULT '',
+      next_watering_on DATE
+    );
+    CREATE TABLE IF NOT EXISTS activity (
+      id UUID PRIMARY KEY,
+      tree_name TEXT NOT NULL,
+      planted_by TEXT NOT NULL DEFAULT '',
+      action TEXT NOT NULL,
+      timestamp TIMESTAMPTZ NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS users (
+      id UUID PRIMARY KEY,
+      username VARCHAR(32) NOT NULL UNIQUE,
+      role TEXT NOT NULL CHECK (role IN ('admin', 'editor', 'viewer')),
+      salt TEXT NOT NULL,
+      password_hash TEXT NOT NULL,
+      password_parameters JSONB NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS sessions (
+      token_hash TEXT PRIMARY KEY,
+      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      expires_at TIMESTAMPTZ NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS sessions_user_idx ON sessions(user_id);
+    CREATE INDEX IF NOT EXISTS activity_timestamp_idx ON activity(timestamp DESC);
+    CREATE TABLE IF NOT EXISTS login_attempts (
+      id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+      client_key TEXT NOT NULL,
+      attempted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS login_attempts_lookup_idx ON login_attempts(client_key, attempted_at DESC);
+  `).catch((error) => {
+    schemaReady = undefined;
     throw error;
-  }
-}
-
-function readStore() {
-  importLegacyData();
-  const trees = database.prepare('SELECT id, name, planted_by AS plantedBy, planted_on AS date, status FROM trees ORDER BY rowid').all();
-  const activity = database.prepare('SELECT id, tree_name AS treeName, planted_by AS plantedBy, action, timestamp FROM activity ORDER BY timestamp DESC, rowid DESC').all();
-  const users = database.prepare('SELECT id, username, role, salt, password_hash AS passwordHash, password_parameters AS passwordParameters, created_at AS createdAt FROM users ORDER BY rowid').all()
-    .map((user) => ({ ...user, passwordParameters: JSON.parse(user.passwordParameters) }));
-  return { trees, activity, users };
-}
-
-function writeStore(store) {
-  database.exec('BEGIN IMMEDIATE');
-  try {
-    database.exec('DELETE FROM activity; DELETE FROM trees; DELETE FROM users;');
-    const insertTree = database.prepare('INSERT INTO trees (id, name, planted_by, planted_on, status) VALUES (?, ?, ?, ?, ?)');
-    const insertActivity = database.prepare('INSERT INTO activity (id, tree_name, planted_by, action, timestamp) VALUES (?, ?, ?, ?, ?)');
-    const insertUser = database.prepare('INSERT INTO users (id, username, role, salt, password_hash, password_parameters, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)');
-
-    for (const tree of store.trees) insertTree.run(tree.id, tree.name, tree.plantedBy, tree.date, tree.status);
-    for (const entry of store.activity) insertActivity.run(entry.id, entry.treeName, entry.plantedBy || '', entry.action, entry.timestamp);
-    for (const user of store.users) {
-      insertUser.run(user.id, user.username, user.role, user.salt, user.passwordHash, JSON.stringify(user.passwordParameters), user.createdAt);
-    }
-
-    database.exec('COMMIT');
-  } catch (error) {
-    database.exec('ROLLBACK');
-    throw error;
-  }
+  });
+  await schemaReady;
 }
 
 function sendJson(response, statusCode, body) {
@@ -161,7 +89,7 @@ function cookieValue(request, name) {
 }
 
 function setSessionCookie(request, response, token, maxAgeSeconds = sessionLifetimeMs / 1000) {
-  const secure = request.socket.encrypted ? '; Secure' : '';
+  const secure = request.socket?.encrypted || request.headers['x-forwarded-proto'] === 'https' ? '; Secure' : '';
   response.setHeader('Set-Cookie', `${sessionCookieName}=${encodeURIComponent(token)}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${maxAgeSeconds}${secure}`);
 }
 
@@ -202,29 +130,46 @@ async function verifyPassword(password, user) {
   return timingSafeEqual(derivedKey, expected);
 }
 
-function getCurrentUser(request, store) {
+function mapTree(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    plantedBy: row.planted_by,
+    date: String(row.planted_on).slice(0, 10),
+    status: row.status,
+    careNotes: row.care_notes || '',
+    nextWateringOn: row.next_watering_on ? String(row.next_watering_on).slice(0, 10) : ''
+  };
+}
+
+function mapActivity(row) {
+  return { id: row.id, treeName: row.tree_name, plantedBy: row.planted_by, action: row.action, timestamp: row.timestamp };
+}
+
+async function getCurrentUser(request) {
   const token = cookieValue(request, sessionCookieName);
   if (!token) return null;
   const tokenHash = Buffer.from(token, 'base64url').toString('hex');
-  const session = sessions.get(tokenHash);
-  if (!session) return null;
-  if (session.expiresAt <= Date.now()) {
-    sessions.delete(tokenHash);
-    return null;
-  }
-  return store.users.find((user) => user.id === session.userId) || null;
+  const result = await pool.query(`
+    SELECT u.id, u.username, u.role
+    FROM sessions s JOIN users u ON u.id = s.user_id
+    WHERE s.token_hash = $1 AND s.expires_at > NOW()
+  `, [tokenHash]);
+  return result.rows[0] || null;
 }
 
-function createSession(request, response, user) {
+async function createSession(request, response, user) {
   const token = randomBytes(32).toString('base64url');
   const tokenHash = Buffer.from(token, 'base64url').toString('hex');
-  sessions.set(tokenHash, { userId: user.id, expiresAt: Date.now() + sessionLifetimeMs });
+  await pool.query('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES ($1, $2, $3)', [
+    tokenHash, user.id, new Date(Date.now() + sessionLifetimeMs)
+  ]);
   setSessionCookie(request, response, token);
 }
 
-function destroySession(request, response) {
+async function destroySession(request, response) {
   const token = cookieValue(request, sessionCookieName);
-  if (token) sessions.delete(Buffer.from(token, 'base64url').toString('hex'));
+  if (token) await pool.query('DELETE FROM sessions WHERE token_hash = $1', [Buffer.from(token, 'base64url').toString('hex')]);
   clearSessionCookie(request, response);
 }
 
@@ -238,16 +183,15 @@ function isSameOrigin(request) {
   }
 }
 
-function loginRateLimit(request) {
-  const client = request.socket.remoteAddress || 'unknown';
-  const now = Date.now();
-  const attempts = (loginAttempts.get(client) || []).filter((time) => now - time < 15 * 60 * 1000);
-  if (attempts.length >= 10) {
-    loginAttempts.set(client, attempts);
-    return false;
-  }
-  attempts.push(now);
-  loginAttempts.set(client, attempts);
+async function loginRateLimit(request) {
+  const client = (request.headers['x-forwarded-for'] || request.socket?.remoteAddress || 'unknown').toString().split(',')[0].trim();
+  await pool.query("DELETE FROM login_attempts WHERE attempted_at < NOW() - INTERVAL '1 day'");
+  const result = await pool.query(`
+    SELECT COUNT(*)::int AS count FROM login_attempts
+    WHERE client_key = $1 AND attempted_at > NOW() - INTERVAL '15 minutes'
+  `, [client]);
+  if (result.rows[0].count >= 10) return false;
+  await pool.query('INSERT INTO login_attempts (client_key) VALUES ($1)', [client]);
   return true;
 }
 
@@ -273,7 +217,6 @@ async function readJsonBody(request) {
       throw error;
     }
   }
-
   try {
     return JSON.parse(body);
   } catch {
@@ -284,7 +227,7 @@ async function readJsonBody(request) {
 }
 
 function isValidDate(date) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
+  if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
   const parsed = new Date(`${date}T00:00:00.000Z`);
   return !Number.isNaN(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === date;
 }
@@ -299,16 +242,43 @@ function makeActivity(tree, action) {
   };
 }
 
+async function insertActivity(client, entry) {
+  await client.query('INSERT INTO activity (id, tree_name, planted_by, action, timestamp) VALUES ($1, $2, $3, $4, $5)', [
+    entry.id, entry.treeName, entry.plantedBy || '', entry.action, entry.timestamp
+  ]);
+  await client.query('DELETE FROM activity WHERE id IN (SELECT id FROM activity ORDER BY timestamp DESC OFFSET $1)', [maxActivityEntries]);
+}
+
+async function withTransaction(callback) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const result = await callback(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 async function handleApi(request, response, url) {
+  await ensureDatabase();
+
   if (request.method === 'GET' && url.pathname === '/api/health') {
+    await pool.query('SELECT 1');
     sendJson(response, 200, { ok: true });
     return;
   }
 
   if (request.method === 'GET' && url.pathname === '/api/auth/me') {
-    const store = readStore();
-    const user = getCurrentUser(request, store);
-    sendJson(response, 200, { user: user ? publicUser(user) : null, setupRequired: store.users.length === 0 });
+    const [userResult, user] = await Promise.all([
+      pool.query('SELECT EXISTS (SELECT 1 FROM users) AS configured'),
+      getCurrentUser(request)
+    ]);
+    sendJson(response, 200, { user: user ? publicUser(user) : null, setupRequired: !userResult.rows[0].configured });
     return;
   }
 
@@ -317,12 +287,6 @@ async function handleApi(request, response, url) {
       sendJson(response, 403, { error: 'Недопустимый источник запроса.' });
       return;
     }
-    const store = readStore();
-    if (store.users.length > 0 || setupInProgress) {
-      sendJson(response, 409, { error: 'Первичная настройка уже завершена. Войдите в аккаунт.' });
-      return;
-    }
-
     const body = await readJsonBody(request);
     const username = normalizeUsername(body.username);
     if (!validUsername(username)) {
@@ -333,23 +297,24 @@ async function handleApi(request, response, url) {
       sendJson(response, 400, { error: 'Пароль должен содержать от 10 до 128 символов.' });
       return;
     }
-
-    setupInProgress = true;
-    try {
-      const passwordRecord = await hashPassword(body.password);
-      const latestStore = readStore();
-      if (latestStore.users.length > 0) {
-        sendJson(response, 409, { error: 'Первичная настройка уже завершена. Войдите в аккаунт.' });
-        return;
-      }
-      const admin = { id: randomUUID(), username, role: 'admin', ...passwordRecord, createdAt: new Date().toISOString() };
-      latestStore.users.push(admin);
-      writeStore(latestStore);
-      createSession(request, response, admin);
-      sendJson(response, 201, { user: publicUser(admin), setupRequired: false });
-    } finally {
-      setupInProgress = false;
+    const passwordRecord = await hashPassword(body.password);
+    const admin = await withTransaction(async (client) => {
+      await client.query("SELECT pg_advisory_xact_lock(70417021)");
+      const existing = await client.query('SELECT 1 FROM users LIMIT 1');
+      if (existing.rowCount) return null;
+      const user = { id: randomUUID(), username, role: 'admin', ...passwordRecord, createdAt: new Date().toISOString() };
+      await client.query(`
+        INSERT INTO users (id, username, role, salt, password_hash, password_parameters, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `, [user.id, user.username, user.role, user.salt, user.passwordHash, user.passwordParameters, user.createdAt]);
+      return user;
+    });
+    if (!admin) {
+      sendJson(response, 409, { error: 'Первичная настройка уже завершена. Войдите в аккаунт.' });
+      return;
     }
+    await createSession(request, response, admin);
+    sendJson(response, 201, { user: publicUser(admin), setupRequired: false });
     return;
   }
 
@@ -358,23 +323,23 @@ async function handleApi(request, response, url) {
       sendJson(response, 403, { error: 'Недопустимый источник запроса.' });
       return;
     }
-    if (!loginRateLimit(request)) {
+    if (!await loginRateLimit(request)) {
       sendJson(response, 429, { error: 'Слишком много попыток. Повторите через 15 минут.' });
       return;
     }
-
     const body = await readJsonBody(request);
     const username = normalizeUsername(body.username);
     const password = typeof body.password === 'string' ? body.password.slice(0, 128) : '';
-    const store = readStore();
-    const user = store.users.find((candidate) => candidate.username === username);
-    const passwordMatches = await verifyPassword(password, user);
-    if (!user || !passwordMatches) {
+    const result = await pool.query(`
+      SELECT id, username, role, salt, password_hash AS "passwordHash", password_parameters AS "passwordParameters"
+      FROM users WHERE username = $1
+    `, [username]);
+    const user = result.rows[0];
+    if (!await verifyPassword(password, user)) {
       sendJson(response, 401, { error: 'Неверный логин или пароль.' });
       return;
     }
-
-    createSession(request, response, user);
+    await createSession(request, response, user);
     sendJson(response, 200, { user: publicUser(user), setupRequired: false });
     return;
   }
@@ -384,17 +349,17 @@ async function handleApi(request, response, url) {
       sendJson(response, 403, { error: 'Недопустимый источник запроса.' });
       return;
     }
-    destroySession(request, response);
+    await destroySession(request, response);
     sendJson(response, 200, { ok: true });
     return;
   }
 
-  const store = readStore();
-  const currentUser = getCurrentUser(request, store);
+  const currentUser = await getCurrentUser(request);
 
   if (request.method === 'GET' && url.pathname === '/api/users') {
     if (!requireRole(currentUser, response, ['admin'])) return;
-    sendJson(response, 200, { users: store.users.map(publicUser) });
+    const result = await pool.query('SELECT id, username, role FROM users ORDER BY created_at');
+    sendJson(response, 200, { users: result.rows });
     return;
   }
 
@@ -404,10 +369,8 @@ async function handleApi(request, response, url) {
       return;
     }
     if (!requireRole(currentUser, response, ['admin'])) return;
-
     const body = await readJsonBody(request);
     const username = normalizeUsername(body.username);
-    const role = body.role;
     if (!validUsername(username)) {
       sendJson(response, 400, { error: 'Логин: 3–32 символа, латинские буквы, цифры, точка, дефис или подчёркивание.' });
       return;
@@ -416,19 +379,24 @@ async function handleApi(request, response, url) {
       sendJson(response, 400, { error: 'Пароль должен содержать от 10 до 128 символов.' });
       return;
     }
-    if (!['editor', 'viewer'].includes(role)) {
+    if (!['editor', 'viewer'].includes(body.role)) {
       sendJson(response, 400, { error: 'Выберите роль «редактор» или «только просмотр».' });
       return;
     }
-    if (store.users.some((user) => user.username === username)) {
-      sendJson(response, 409, { error: 'Такой логин уже существует.' });
-      return;
-    }
-
     const passwordRecord = await hashPassword(body.password);
-    const user = { id: randomUUID(), username, role, ...passwordRecord, createdAt: new Date().toISOString() };
-    store.users.push(user);
-    writeStore(store);
+    const user = { id: randomUUID(), username, role: body.role, ...passwordRecord, createdAt: new Date().toISOString() };
+    try {
+      await pool.query(`
+        INSERT INTO users (id, username, role, salt, password_hash, password_parameters, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `, [user.id, user.username, user.role, user.salt, user.passwordHash, user.passwordParameters, user.createdAt]);
+    } catch (error) {
+      if (error.code === '23505') {
+        sendJson(response, 409, { error: 'Такой логин уже существует.' });
+        return;
+      }
+      throw error;
+    }
     sendJson(response, 201, { user: publicUser(user) });
     return;
   }
@@ -440,29 +408,26 @@ async function handleApi(request, response, url) {
       return;
     }
     if (!requireRole(currentUser, response, ['admin'])) return;
-
     const userId = decodeURIComponent(userRoute[1]);
     if (userId === currentUser.id) {
       sendJson(response, 400, { error: 'Нельзя удалить аккаунт, в который вы вошли.' });
       return;
     }
-    const userIndex = store.users.findIndex((user) => user.id === userId);
-    if (userIndex === -1) {
+    const result = await pool.query('DELETE FROM users WHERE id = $1 RETURNING id', [userId]);
+    if (!result.rowCount) {
       sendJson(response, 404, { error: 'Аккаунт не найден.' });
       return;
-    }
-
-    store.users.splice(userIndex, 1);
-    writeStore(store);
-    for (const [tokenHash, session] of sessions) {
-      if (session.userId === userId) sessions.delete(tokenHash);
     }
     sendJson(response, 200, { ok: true });
     return;
   }
 
   if (request.method === 'GET' && url.pathname === '/api/trees') {
-    sendJson(response, 200, { trees: store.trees, activity: store.activity });
+    const [treeResult, activityResult] = await Promise.all([
+      pool.query('SELECT * FROM trees ORDER BY planted_on DESC, id'),
+      pool.query('SELECT * FROM activity ORDER BY timestamp DESC LIMIT $1', [maxActivityEntries])
+    ]);
+    sendJson(response, 200, { trees: treeResult.rows.map(mapTree), activity: activityResult.rows.map(mapActivity) });
     return;
   }
 
@@ -473,34 +438,17 @@ async function handleApi(request, response, url) {
     }
     if (!requireRole(currentUser, response, ['admin', 'editor'])) return;
     const body = await readJsonBody(request);
-    const name = typeof body.name === 'string' ? body.name.trim() : '';
-    const plantedBy = typeof body.plantedBy === 'string' ? body.plantedBy.trim() : '';
-    const date = typeof body.date === 'string' ? body.date : '';
-    const status = typeof body.status === 'string' ? body.status : '';
-
-    if (!name || name.length > 48) {
-      sendJson(response, 400, { error: 'Укажите имя дерева (не более 48 символов).' });
+    const tree = validateTree(body);
+    if (tree.error) {
+      sendJson(response, 400, { error: tree.error });
       return;
     }
-    if (!plantedBy || plantedBy.length > 32) {
-      sendJson(response, 400, { error: 'Укажите студента или группу (не более 32 символов).' });
-      return;
-    }
-    if (!isValidDate(date) || date > new Date().toISOString().slice(0, 10)) {
-      sendJson(response, 400, { error: 'Укажите корректную дату посадки не позднее сегодняшнего дня.' });
-      return;
-    }
-    if (!statuses.has(status)) {
-      sendJson(response, 400, { error: 'Выберите один из доступных статусов дерева.' });
-      return;
-    }
-
-    const tree = { id: randomUUID(), name, plantedBy, date, status };
+    tree.id = randomUUID();
     const activity = makeActivity(tree, 'Добавлена посадка');
-    store.trees.unshift(tree);
-    store.activity.unshift(activity);
-    store.activity = store.activity.slice(0, maxActivityEntries);
-    writeStore(store);
+    await withTransaction(async (client) => {
+      await saveTree(client, tree);
+      await insertActivity(client, activity);
+    });
     sendJson(response, 201, { tree, activity });
     return;
   }
@@ -518,40 +466,116 @@ async function handleApi(request, response, url) {
       sendJson(response, 400, { error: 'Выберите один из доступных статусов дерева.' });
       return;
     }
-
-    const tree = store.trees.find((item) => item.id === treeId);
-    if (!tree) {
+    const existing = await pool.query('SELECT * FROM trees WHERE id = $1', [treeId]);
+    if (!existing.rowCount) {
       sendJson(response, 404, { error: 'Дерево не найдено.' });
       return;
     }
-
+    const tree = mapTree(existing.rows[0]);
     if (tree.status === body.status) {
       sendJson(response, 200, { tree, activity: null });
       return;
     }
-
     const previousStatus = tree.status;
     tree.status = body.status;
     const activity = makeActivity(tree, `Статус изменён: ${previousStatus} → ${body.status}`);
-    store.activity.unshift(activity);
-    store.activity = store.activity.slice(0, maxActivityEntries);
-    writeStore(store);
+    await withTransaction(async (client) => {
+      await client.query('UPDATE trees SET status = $2 WHERE id = $1', [tree.id, tree.status]);
+      await insertActivity(client, activity);
+    });
     sendJson(response, 200, { tree, activity });
+    return;
+  }
+
+  const treeRoute = url.pathname.match(/^\/api\/trees\/([^/]+)$/);
+  if (treeRoute && request.method === 'PATCH') {
+    if (!isSameOrigin(request)) {
+      sendJson(response, 403, { error: 'Недопустимый источник запроса.' });
+      return;
+    }
+    if (!requireRole(currentUser, response, ['admin', 'editor'])) return;
+    const treeId = decodeURIComponent(treeRoute[1]);
+    const body = await readJsonBody(request);
+    const tree = validateTree(body);
+    if (tree.error) {
+      sendJson(response, 400, { error: tree.error });
+      return;
+    }
+    const existing = await pool.query('SELECT id FROM trees WHERE id = $1', [treeId]);
+    if (!existing.rowCount) {
+      sendJson(response, 404, { error: 'Дерево не найдено.' });
+      return;
+    }
+    tree.id = treeId;
+    const activity = makeActivity(tree, 'Обновлена информация о посадке');
+    await withTransaction(async (client) => {
+      await saveTree(client, tree);
+      await insertActivity(client, activity);
+    });
+    sendJson(response, 200, { tree, activity });
+    return;
+  }
+
+  if (treeRoute && request.method === 'DELETE') {
+    if (!isSameOrigin(request)) {
+      sendJson(response, 403, { error: 'Недопустимый источник запроса.' });
+      return;
+    }
+    if (!requireRole(currentUser, response, ['admin', 'editor'])) return;
+    const treeId = decodeURIComponent(treeRoute[1]);
+    const result = await pool.query('SELECT * FROM trees WHERE id = $1', [treeId]);
+    if (!result.rowCount) {
+      sendJson(response, 404, { error: 'Дерево не найдено.' });
+      return;
+    }
+    const tree = mapTree(result.rows[0]);
+    const activity = makeActivity(tree, 'Удалена посадка');
+    await withTransaction(async (client) => {
+      await client.query('DELETE FROM trees WHERE id = $1', [treeId]);
+      await insertActivity(client, activity);
+    });
+    sendJson(response, 200, { ok: true, activity });
     return;
   }
 
   sendJson(response, 404, { error: 'API-маршрут не найден.' });
 }
 
-const server = createServer(async (request, response) => {
-  const url = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
+function validateTree(body) {
+  const tree = {
+    name: typeof body.name === 'string' ? body.name.trim() : '',
+    plantedBy: typeof body.plantedBy === 'string' ? body.plantedBy.trim() : '',
+    date: typeof body.date === 'string' ? body.date : '',
+    status: typeof body.status === 'string' ? body.status : '',
+    careNotes: typeof body.careNotes === 'string' ? body.careNotes.trim() : '',
+    nextWateringOn: typeof body.nextWateringOn === 'string' ? body.nextWateringOn : ''
+  };
+  if (!tree.name || tree.name.length > 48) return { error: 'Укажите имя дерева (не более 48 символов).' };
+  if (!tree.plantedBy || tree.plantedBy.length > 32) return { error: 'Укажите студента или группу (не более 32 символов).' };
+  if (!isValidDate(tree.date) || tree.date > new Date().toISOString().slice(0, 10)) return { error: 'Укажите корректную дату посадки не позднее сегодняшнего дня.' };
+  if (!statuses.has(tree.status)) return { error: 'Выберите один из доступных статусов дерева.' };
+  if (tree.careNotes.length > 1000) return { error: 'Заметка об уходе должна содержать не более 1000 символов.' };
+  if (tree.nextWateringOn && !isValidDate(tree.nextWateringOn)) return { error: 'Укажите корректную дату следующего полива.' };
+  return tree;
+}
 
+async function saveTree(client, tree) {
+  await client.query(`
+    INSERT INTO trees (id, name, planted_by, planted_on, status, care_notes, next_watering_on)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    ON CONFLICT (id) DO UPDATE SET
+      name = EXCLUDED.name, planted_by = EXCLUDED.planted_by, planted_on = EXCLUDED.planted_on,
+      status = EXCLUDED.status, care_notes = EXCLUDED.care_notes, next_watering_on = EXCLUDED.next_watering_on
+  `, [tree.id, tree.name, tree.plantedBy, tree.date, tree.status, tree.careNotes, tree.nextWateringOn || null]);
+}
+
+export async function handleRequest(request, response) {
+  const url = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
   try {
     if (url.pathname.startsWith('/api/')) {
       await handleApi(request, response, url);
       return;
     }
-
     if (request.method === 'GET' && (url.pathname === '/' || url.pathname === '/index.html')) {
       const html = readFileSync(join(projectDirectory, 'index.html'));
       response.writeHead(200, {
@@ -562,18 +586,23 @@ const server = createServer(async (request, response) => {
       response.end(html);
       return;
     }
-
     sendJson(response, 404, { error: 'Страница не найдена.' });
   } catch (error) {
     console.error(error);
     if (!response.headersSent) {
-      sendJson(response, error.statusCode || 500, { error: error.statusCode ? error.message : 'Внутренняя ошибка сервера.' });
+      sendJson(response, error.statusCode || (error.message === 'DATABASE_URL не настроен.' ? 503 : 500), {
+        error: error.statusCode ? error.message : error.message === 'DATABASE_URL не настроен.'
+          ? 'Сервер не настроен: укажите DATABASE_URL.'
+          : 'Внутренняя ошибка сервера.'
+      });
     } else {
       response.end();
     }
   }
-});
+}
 
-server.listen(port, '127.0.0.1', () => {
-  console.log(`My Tree CCU запущен: http://127.0.0.1:${port}`);
-});
+if (process.env.VERCEL !== '1') {
+  createServer(handleRequest).listen(port, '127.0.0.1', () => {
+    console.log(`My Tree CCU запущен: http://127.0.0.1:${port}`);
+  });
+}

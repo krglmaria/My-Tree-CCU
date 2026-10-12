@@ -266,7 +266,7 @@
     .section-note { margin: 6px 0 0; color: var(--muted); font-size: 11px; }
     .tree-form {
       display: grid;
-      grid-template-columns: 1.35fr .7fr 1fr 1fr auto;
+      grid-template-columns: 1.2fr .8fr .9fr .9fr 1.2fr .9fr auto;
       align-items: end;
       gap: 11px;
       margin-bottom: 12px;
@@ -278,7 +278,7 @@
     }
     .form-field { display: grid; gap: 6px; min-width: 0; }
     .form-field span { color: #657168; font-size: 10px; font-weight: 650; }
-    .form-field input, .form-field select {
+    .form-field input, .form-field select, .form-field textarea {
       width: 100%;
       min-height: 38px;
       padding: 0 10px;
@@ -289,6 +289,7 @@
       font: inherit;
       font-size: 11px;
     }
+    .form-field textarea { min-height: 38px; padding: 9px 10px; resize: vertical; }
     .form-field input:focus-visible, .form-field select:focus-visible, .status-select:focus-visible {
       outline: 3px solid #b8d9bd;
       outline-offset: 1px;
@@ -349,6 +350,13 @@
     th { height: 41px; padding: 0 20px; background: #fafcf9; color: #89938b; font-size: 10px; font-weight: 650; }
     td { height: 58px; padding: 0 20px; border-top: 1px solid #edf0ec; color: #526057; font-size: 11px; }
     .tree-name { color: var(--ink); font-weight: 650; }
+    .tree-note { max-width: 340px; margin-top: 5px; color: var(--muted); font-size: 10px; line-height: 1.45; white-space: pre-wrap; }
+    .tree-actions { display: flex; gap: 6px; }
+    .tree-action { min-height: 30px; padding: 0 8px; border: 1px solid #dce5dc; border-radius: 7px; background: #fff; color: #496052; cursor: pointer; font-size: 10px; }
+    .tree-action:hover { background: #f5f8f4; }
+    .tree-action.delete { border-color: #ecd9d6; color: #9b4539; }
+    .tree-action.delete:hover { background: #fbf2f0; }
+    .tree-action:focus-visible { outline: 3px solid #a9d4ad; outline-offset: 2px; }
     .tree-type { display: inline-grid; width: 28px; height: 28px; place-items: center; margin-right: 9px; border-radius: 9px; background: #edf4ea; font-size: 15px; vertical-align: middle; }
     .status-select {
       max-width: 100%;
@@ -407,7 +415,10 @@
       td:first-child { grid-column: 1 / -1; }
       td:nth-child(2)::before { content: "Кем посажено: "; color: #929b94; }
       td:nth-child(3)::before { content: "Дата: "; color: #929b94; }
-      td:nth-child(4) { grid-column: 2; grid-row: 2 / span 2; align-self: center; }
+      td:nth-child(4) { grid-column: 1; align-self: center; }
+      td:nth-child(4)::before { content: "Статус: "; color: #929b94; }
+      td:nth-child(5)::before { content: "Следующий полив: "; color: #929b94; }
+      td:nth-child(6) { grid-column: 1 / -1; }
       .footer { flex-direction: column; gap: 6px; }
     }
     @media (max-width: 420px) {
@@ -497,10 +508,10 @@
             <h2 id="stats-title">Наш вклад в кампус</h2>
             <p class="section-note">Сводка по деревьям и уходу</p>
           </div>
-          <span class="period">Демо-сценарий · 2026</span>
+          <span class="period">Каталог · 2026</span>
         </div>
-        <p class="demo-notice"><span aria-hidden="true">ⓘ</span>Показатели и примеры посадок демонстрационные, не фактические данные колледжа.</p>
-        <div class="stats-grid" aria-label="Демонстрационные показатели проекта">
+        <p class="demo-notice"><span aria-hidden="true">ⓘ</span>Сводка рассчитана по каталогу. Поглощение CO₂ — отдельная оценка, не подтверждённые измерения.</p>
+        <div class="stats-grid" aria-label="Показатели каталога посадок">
           <article class="stat-card">
             <div class="stat-top"><span class="stat-label">Всего посажено деревьев</span><span class="stat-symbol" aria-hidden="true">🌱</span></div>
             <div class="stat-value" id="trees-count">—</div>
@@ -522,16 +533,16 @@
       <section class="impact section-block" id="impact" aria-labelledby="impact-title">
         <div class="impact-main">
           <p class="impact-kicker">Наш измеримый вклад</p>
-          <h2 class="impact-title" id="impact-title">CO₂, поглощённое деревьями CCU</h2>
+          <h2 class="impact-title" id="impact-title">Оценка поглощения CO₂ деревьями CCU</h2>
           <div class="co2-line" aria-live="polite"><span class="co2-value" id="co2-count">0</span><span class="co2-unit">кг CO₂</span></div>
-          <div class="progress-meta"><span>Демо-цель сезона</span><span><strong id="goal-progress">0</strong> из 2 000 кг</span></div>
+          <div class="progress-meta"><span>Оценка к условной цели</span><span><strong id="goal-progress">0</strong> из 2 000 кг</span></div>
           <div class="progress-track" role="progressbar" aria-label="Прогресс к демонстрационной цели по поглощению CO2" aria-valuemin="0" aria-valuemax="2000" aria-valuenow="0"><div class="progress-fill" id="progress-fill"></div></div>
         </div>
         <aside class="impact-aside" aria-label="Дополнительный экологический эффект">
           <p class="aside-label">Эффект кампании</p>
           <div class="impact-fact"><span>Прижилось</span><strong id="survival-count">—%</strong></div>
-          <div class="impact-fact"><span>Демо-норма CO₂</span><strong id="co2-rate">22 кг / год</strong></div>
-          <p class="impact-foot">Примерный расчёт, а не подтверждённые данные: 22 кг на дерево в год.</p>
+          <div class="impact-fact"><span>Расчётная норма CO₂</span><strong id="co2-rate">22 кг / год</strong></div>
+          <p class="impact-foot">Оценка, не подтверждённые измерения: число посадок × 22 кг на дерево в год. Порода и возраст не учитываются.</p>
         </aside>
       </section>
 
@@ -558,7 +569,7 @@
 
       <section class="activity-section section-block" id="grove" aria-labelledby="activity-title">
         <div class="section-heading">
-          <div><h2 id="activity-title">Деревья нашего кампуса</h2><p class="section-note">Каталог посадок: ищите дерево и обновляйте его статус</p></div>
+          <div><h2 id="activity-title">Деревья нашего кампуса</h2><p class="section-note">Каталог посадок, статусы и план ухода</p></div>
         </div>
         <div class="catalog-tools">
           <div class="catalog-filters">
@@ -576,7 +587,7 @@
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th scope="col">Дерево</th><th scope="col">Кем посажено</th><th scope="col">Дата</th><th scope="col">Статус ухода</th></tr></thead>
+            <thead><tr><th scope="col">Дерево и заметки</th><th scope="col">Кем посажено</th><th scope="col">Дата</th><th scope="col">Статус ухода</th><th scope="col">Следующий полив</th><th scope="col">Действия</th></tr></thead>
             <tbody id="trees-table-body"></tbody>
           </table>
           <p class="empty-state" id="empty-state" hidden>По вашему запросу деревьев не найдено.</p>
@@ -602,7 +613,10 @@
           <label class="form-field"><span>Кем посажено</span><input id="tree-planted-by" name="plantedBy" type="text" maxlength="32" placeholder="Э-21 или имя студента" required></label>
           <label class="form-field"><span>Дата посадки</span><input id="tree-date" name="date" type="date" required></label>
           <label class="form-field"><span>Статус</span><select id="tree-status" name="status" required><option value="planted">Посажено</option><option value="watered">Полито</option><option value="established">Прижилось</option></select></label>
+          <label class="form-field"><span>Заметка об уходе</span><textarea id="tree-care-notes" name="careNotes" maxlength="1000" rows="2" placeholder="Например, мульчировать приствольный круг"></textarea></label>
+          <label class="form-field"><span>Следующий полив</span><input id="tree-next-watering" name="nextWateringOn" type="date"></label>
           <button class="add-tree-button" type="submit"><span aria-hidden="true">＋</span>Добавить дерево</button>
+          <button class="tree-action" id="cancel-tree-edit" type="button" hidden>Отмена</button>
         </form>
         <p class="form-feedback" id="form-feedback" aria-live="polite">Записи отправляются на сервер проекта.</p>
       </section>
@@ -615,13 +629,13 @@
 
     <footer class="footer">
       <span>My Tree CCU · Трекер озеленения колледжа</span>
-      <span>Демо-данные · записи и журнал сохраняются на сервере</span>
+      <span>Посадки и журнал сохраняются в базе проекта</span>
     </footer>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script>
-    // Все числа ниже демонстрационные и могут быть заменены данными колледжа.
+    // Норма CO2 и целевое значение являются условными оценочными параметрами.
     const co2Target = 2000;
     const annualCo2PerTree = 22;
     const statusLabels = {
@@ -640,6 +654,7 @@
     let activity = [];
     let currentUser = null;
     let setupRequired = false;
+    let editingTreeId = null;
 
     const formatNumber = (value) => new Intl.NumberFormat('ru-RU').format(value);
 
@@ -874,19 +889,31 @@
       const sortedTrees = [...matchingTrees].sort((first, second) => second.date.localeCompare(first.date));
       tableBody.replaceChildren();
       document.getElementById('catalog-count').textContent = `Показано ${sortedTrees.length} из ${trees.length}`;
-      document.getElementById('empty-state').hidden = sortedTrees.length > 0;
+      const emptyState = document.getElementById('empty-state');
+      emptyState.hidden = sortedTrees.length > 0;
+      emptyState.textContent = trees.length === 0
+        ? 'Каталог пока пуст. Добавьте первую посадку, чтобы начать учёт.'
+        : 'По вашему запросу деревьев не найдено.';
 
       sortedTrees.forEach((tree) => {
         const row = document.createElement('tr');
         const nameCell = document.createElement('td');
         const icon = document.createElement('span');
         const name = document.createElement('span');
+        const nameDetails = document.createElement('div');
         icon.className = 'tree-type';
         icon.setAttribute('aria-hidden', 'true');
         icon.textContent = '🌳';
         name.className = 'tree-name';
         name.textContent = tree.name;
-        nameCell.append(icon, name);
+        nameDetails.append(name);
+        if (tree.careNotes) {
+          const note = document.createElement('div');
+          note.className = 'tree-note';
+          note.textContent = tree.careNotes;
+          nameDetails.append(note);
+        }
+        nameCell.append(icon, nameDetails);
 
         const groupCell = document.createElement('td');
         groupCell.textContent = tree.plantedBy;
@@ -916,7 +943,30 @@
           status.textContent = statusLabels[tree.status];
           statusCell.append(status);
         }
-        row.append(nameCell, groupCell, dateCell, statusCell);
+        const wateringCell = document.createElement('td');
+        wateringCell.textContent = tree.nextWateringOn
+          ? new Intl.DateTimeFormat('ru-RU', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(`${tree.nextWateringOn}T12:00:00`))
+          : 'Не указана';
+        const actionsCell = document.createElement('td');
+        if (['admin', 'editor'].includes(currentUser?.role)) {
+          const actions = document.createElement('div');
+          const editButton = document.createElement('button');
+          const deleteButton = document.createElement('button');
+          actions.className = 'tree-actions';
+          editButton.className = 'tree-action';
+          editButton.type = 'button';
+          editButton.dataset.action = 'edit';
+          editButton.dataset.treeId = tree.id;
+          editButton.textContent = 'Изменить';
+          deleteButton.className = 'tree-action delete';
+          deleteButton.type = 'button';
+          deleteButton.dataset.action = 'delete';
+          deleteButton.dataset.treeId = tree.id;
+          deleteButton.textContent = 'Удалить';
+          actions.append(editButton, deleteButton);
+          actionsCell.append(actions);
+        }
+        row.append(nameCell, groupCell, dateCell, statusCell, wateringCell, actionsCell);
         tableBody.append(row);
       });
     }
@@ -978,7 +1028,9 @@
         name: String(formData.get('name')).trim(),
         plantedBy: String(formData.get('plantedBy')).trim(),
         date: String(formData.get('date')),
-        status: String(formData.get('status'))
+        status: String(formData.get('status')),
+        careNotes: String(formData.get('careNotes')).trim(),
+        nextWateringOn: String(formData.get('nextWateringOn'))
       };
 
       if (!tree.name || !tree.plantedBy || !tree.date || !statusLabels[tree.status]) {
@@ -989,19 +1041,74 @@
       const submitButton = form.querySelector('button[type="submit"]');
       submitButton.disabled = true;
       try {
-        const result = await apiRequest('/api/trees', { method: 'POST', body: JSON.stringify(tree) });
-        trees.unshift(result.tree);
+        const result = editingTreeId
+          ? await apiRequest(`/api/trees/${encodeURIComponent(editingTreeId)}`, { method: 'PATCH', body: JSON.stringify(tree) })
+          : await apiRequest('/api/trees', { method: 'POST', body: JSON.stringify(tree) });
+        if (editingTreeId) {
+          Object.assign(trees.find((item) => item.id === editingTreeId), result.tree);
+        } else {
+          trees.unshift(result.tree);
+        }
         activity.unshift(result.activity);
         document.getElementById('tree-search').value = '';
         document.getElementById('status-filter').value = 'all';
         renderDashboard();
         form.reset();
         dateInput.value = localToday;
-        document.getElementById('form-feedback').textContent = 'Посадка добавлена и сохранена на сервере.';
+        editingTreeId = null;
+        form.querySelector('button[type="submit"]').innerHTML = '<span aria-hidden="true">＋</span>Добавить дерево';
+        document.getElementById('cancel-tree-edit').hidden = true;
+        document.getElementById('add-tree-title').textContent = 'Добавить посадку';
+        document.getElementById('form-feedback').textContent = result.activity.action === 'Обновлена информация о посадке'
+          ? 'Посадка обновлена и сохранена.'
+          : 'Посадка добавлена и сохранена.';
       } catch (error) {
         document.getElementById('form-feedback').textContent = error.message;
       } finally {
         submitButton.disabled = false;
+      }
+    });
+
+    document.getElementById('cancel-tree-edit').addEventListener('click', () => {
+      editingTreeId = null;
+      form.reset();
+      dateInput.value = localToday;
+      form.querySelector('button[type="submit"]').innerHTML = '<span aria-hidden="true">＋</span>Добавить дерево';
+      document.getElementById('cancel-tree-edit').hidden = true;
+      document.getElementById('add-tree-title').textContent = 'Добавить посадку';
+    });
+
+    document.getElementById('trees-table-body').addEventListener('click', async (event) => {
+      const actionButton = event.target.closest('.tree-action[data-action]');
+      if (!actionButton) return;
+      const tree = trees.find((item) => item.id === actionButton.dataset.treeId);
+      if (!tree) return;
+      if (actionButton.dataset.action === 'edit') {
+        editingTreeId = tree.id;
+        form.elements.name.value = tree.name;
+        form.elements.plantedBy.value = tree.plantedBy;
+        form.elements.date.value = tree.date;
+        form.elements.status.value = tree.status;
+        form.elements.careNotes.value = tree.careNotes || '';
+        form.elements.nextWateringOn.value = tree.nextWateringOn || '';
+        form.querySelector('button[type="submit"]').textContent = 'Сохранить';
+        document.getElementById('cancel-tree-edit').hidden = false;
+        document.getElementById('add-tree-title').textContent = 'Редактировать посадку';
+        document.getElementById('add-tree').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        form.elements.name.focus({ preventScroll: true });
+        return;
+      }
+      if (!window.confirm(`Удалить посадку «${tree.name}»? Это действие нельзя отменить.`)) return;
+      actionButton.disabled = true;
+      try {
+        const result = await apiRequest(`/api/trees/${encodeURIComponent(tree.id)}`, { method: 'DELETE' });
+        trees = trees.filter((item) => item.id !== tree.id);
+        activity.unshift(result.activity);
+        renderDashboard();
+        document.getElementById('form-feedback').textContent = 'Посадка удалена.';
+      } catch (error) {
+        actionButton.disabled = false;
+        document.getElementById('form-feedback').textContent = error.message;
       }
     });
 
