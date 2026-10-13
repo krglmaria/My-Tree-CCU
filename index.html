@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <meta name="theme-color" content="#f4f7f2">
   <meta name="description" content="My Tree CCU — трекер посадок, статусов и ухода за деревьями колледжа.">
   <meta property="og:type" content="website">
@@ -450,6 +453,40 @@
       .user-form .add-tree-button { grid-column: auto; }
       .admin-heading { align-items: flex-start; flex-direction: column; gap: 4px; }
     }
+
+    /* Eco-Tech visual system */
+    :root { color-scheme: light; --page: #f1f6f2; --surface: rgba(255,255,255,.84); --ink: #10281d; --muted: #668074; --line: rgba(23,71,48,.12); --green: #07865a; --green-dark: #0a2e1d; --green-pale: #e5f7ed; --mint: #34d399; --shadow: 0 18px 48px rgba(6, 49, 31, .10); }
+    html { scroll-behavior: smooth; }
+    body { font-family: "Plus Jakarta Sans", Inter, sans-serif; background: radial-gradient(circle at 92% -5%, #c8f6d9 0, transparent 30%), radial-gradient(circle at 5% 25%, #e3f5c9 0, transparent 26%), var(--page); }
+    body::before { content: ""; position: fixed; z-index: -1; inset: 0; pointer-events: none; background-image: linear-gradient(rgba(11,87,56,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(11,87,56,.035) 1px, transparent 1px); background-size: 42px 42px; mask-image: linear-gradient(to bottom, black, transparent 74%); }
+    .shell { width: min(1240px, calc(100% - 48px)); }
+    .topbar { min-height: 76px; border: 1px solid rgba(255,255,255,.7); border-radius: 0 0 22px 22px; background: rgba(244,250,246,.72); box-shadow: 0 8px 30px rgba(7,48,30,.05); backdrop-filter: blur(16px) saturate(160%); }
+    .topbar-inner { width: min(1200px, calc(100% - 48px)); }
+    .brand-mark { width: 43px; height: 43px; border: 0; border-radius: 14px; background: linear-gradient(145deg,#0d7650,#34d399); box-shadow: 0 10px 21px rgba(16,185,129,.23); filter: saturate(1.08); }
+    .brand-name { font-weight: 800; letter-spacing: -.5px; }.brand-caption { font-weight: 500; }
+    .site-nav { padding: 5px; border: 1px solid rgba(14,75,49,.08); border-radius: 999px; background: rgba(255,255,255,.56); gap: 4px; }
+    .site-nav a { padding: 8px 10px; border-radius: 999px; color: #4a6859; }.site-nav a:hover { background: #e4f7ed; color: var(--green-dark); }
+    .initiative { padding: 5px 9px 5px 5px; border: 1px solid rgba(8,110,69,.11); border-radius: 999px; background: rgba(255,255,255,.6); }.initiative-mark { border-radius: 50%; background: #d9f7e5; }
+    .live-label { border-color: rgba(16,185,129,.16); background: rgba(236,253,245,.75); color: #28664a; }.live-dot { background: #34d399; box-shadow: 0 0 0 4px rgba(52,211,153,.17); animation: pulse 2s infinite; }
+    .auth-button, .theme-toggle { min-height: 36px; border: 0; border-radius: 11px; background: linear-gradient(135deg,#087c53,#10b981); box-shadow: 0 8px 16px rgba(5,105,70,.17); color: #fff; font-weight: 700; transition: transform .2s ease, box-shadow .2s ease; }.auth-button:hover, .theme-toggle:hover { transform: translateY(-2px); box-shadow: 0 12px 22px rgba(5,105,70,.25); }.auth-button:active, .theme-toggle:active, .welcome-button:active, .add-tree-button:active { transform: scale(.95); }
+    .theme-toggle { display:grid; width:36px; place-items:center; padding:0; cursor:pointer; font-size:15px; }.language-toggle { display:grid; width:36px; min-height:36px; place-items:center; padding:0; border:1px solid rgba(8,124,83,.2); border-radius:11px; background:rgba(255,255,255,.68); color:#087c53; cursor:pointer; font:800 10px "Plus Jakarta Sans",sans-serif; letter-spacing:.3px; transition:transform .2s ease,background .2s ease; }.language-toggle:hover { background:#e1f8e9; transform:translateY(-2px); }.language-toggle:active { transform:scale(.95); }.live-label { display:none !important; }
+    main { padding-top: 44px; }.workspace-heading { position: relative; min-height: 180px; align-items: center; margin-bottom: 12px; padding: 33px 36px; overflow: hidden; border: 1px solid rgba(22,107,69,.13); border-radius: 26px; background: linear-gradient(115deg, rgba(255,255,255,.9), rgba(224,250,233,.68)); box-shadow: var(--shadow); }.workspace-heading::after { content: "🌱"; position:absolute; right:7%; bottom:-42px; color:#0b8357; font-size:176px; opacity:.13; transform:rotate(-13deg); }
+    .workspace-heading > div, .heading-action { position:relative; z-index:1; }.eyebrow { color:#07865a; font-weight:800; }.workspace-heading h1 { font-size:clamp(31px,4vw,48px); letter-spacing:-2.1px; background:linear-gradient(100deg,#0a2e1d 10%,#07865a 54%,#10b981); -webkit-background-clip:text; background-clip:text; color:transparent; }.intro-copy { max-width:620px; font-size:14px; line-height:1.75; }
+    .welcome-button, .add-tree-button { border:0; border-radius:12px; background:linear-gradient(135deg,#07865a,#34d399); box-shadow:0 11px 21px rgba(5,120,78,.22); font-weight:800; transition:transform .2s ease, box-shadow .2s ease; }.welcome-button:hover,.add-tree-button:hover { background:linear-gradient(135deg,#056542,#10b981); transform:translateY(-2px); box-shadow:0 15px 26px rgba(5,120,78,.28); }
+    .section-block { padding-top:54px; }.section-heading h2 { font-size:25px; letter-spacing:-1px; }.section-note { font-size:12px; }.period { padding:7px 11px; border-radius:999px; background:rgba(255,255,255,.67); font-weight:700; }
+    .demo-notice { border-color:#e3dcae; border-radius:12px; background:rgba(255,250,225,.75); }
+    .stat-card { min-height:158px; border-color:rgba(15,87,54,.09); border-radius:22px; background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(243,255,247,.76)); box-shadow:var(--shadow); transition:transform .25s ease,box-shadow .25s ease; }.stat-card:hover { transform:translateY(-7px); box-shadow:0 22px 42px rgba(6,62,37,.14); }.stat-symbol { width:42px;height:42px;border-radius:14px;background:linear-gradient(145deg,#d8f8e5,#ecfff3); }.stat-value { font-size:38px; letter-spacing:-1.7px; }
+    .impact { isolation:isolate; border:1px solid #b7e7cb; border-radius:26px; background:#f9fffb; color:#103525; box-shadow:0 23px 48px rgba(6,76,47,.11); }.impact::before,.impact::after { content:""; position:absolute; z-index:0; width:310px; height:310px; border:1px solid rgba(16,185,129,.18); border-radius:50%; pointer-events:none; }.impact::before { top:-202px; right:-70px; box-shadow:0 0 0 27px rgba(16,185,129,.055),0 0 0 55px rgba(16,185,129,.035),0 0 0 85px rgba(16,185,129,.025); }.impact::after { right:44px; bottom:-274px; width:250px; height:250px; border-color:rgba(132,204,22,.18); box-shadow:0 0 0 22px rgba(132,204,22,.045),0 0 0 45px rgba(132,204,22,.03); }.impact-main,.impact-aside { z-index:1; }.impact-kicker { color:#287353; }.impact-title { font-size:20px; color:#103525; }.co2-value { color:#087c53; }.co2-unit,.progress-meta { color:#477963; }.progress-track { height:11px; overflow:visible; background:#d9f1e2; }.progress-fill { position:relative; background:#0da66b; box-shadow:0 0 18px rgba(16,185,129,.31); }.progress-fill::after { content:""; position:absolute; top:50%; right:-5px; width:14px;height:14px;border:3px solid #f7fffa;border-radius:50%;background:#0da66b;box-shadow:0 0 0 6px rgba(13,166,107,.14); transform:translateY(-50%); }.impact-aside { border-color:rgba(8,124,83,.16); }.aside-label { color:#287353; }.impact-fact { border-color:rgba(8,124,83,.13); }.impact-fact span { color:#477963; }.impact-fact strong { color:#103525; }.impact-foot { color:#5a856f; }
+    .campus-map-panel,.table-wrap { border-color:rgba(14,84,53,.12); border-radius:22px; background:rgba(255,255,255,.78); box-shadow:var(--shadow); }.map-toolbar { background:linear-gradient(90deg,rgba(242,255,247,.95),rgba(229,249,237,.68)); }.map-note { background:rgba(251,255,252,.7); }.campus-pin { background:linear-gradient(145deg,#07865a,#34d399); animation:marker-in .55s both; }.proposal-pin { background:linear-gradient(145deg,#f59e0b,#fbbf24); animation:marker-in .55s both; }.leaflet-popup-content-wrapper,.leaflet-popup-tip { background:#0d3524; color:#f0fff5; }.map-popup-title { color:#d9ffe7; }.map-popup-copy { color:#b9d8c3; }
+    .tree-form,.admin-panel { border-color:rgba(14,84,53,.11); border-radius:19px; background:rgba(255,255,255,.82); box-shadow:var(--shadow); }.form-field input,.form-field select,.form-field textarea,.catalog-search,.catalog-status { border-color:rgba(16,92,57,.16); border-radius:10px; background:rgba(250,255,251,.9); transition:border-color .2s ease,box-shadow .2s ease; }.form-field input:focus,.form-field select:focus,.form-field textarea:focus,.catalog-search:focus,.catalog-status:focus { border-color:#10b981; outline:0; box-shadow:0 0 0 4px rgba(16,185,129,.15); }
+    th { background:#eff9f2; } tbody tr { transition:background .2s ease,transform .2s ease; } tbody tr:hover { background:#f0fbf4; }.status-select { border:0; box-shadow:inset 0 0 0 1px rgba(16,185,129,.12); }.activity-item { border-color:rgba(14,84,53,.1); border-radius:16px; background:rgba(255,255,255,.76); box-shadow:0 8px 23px rgba(6,49,31,.04); transition:transform .2s ease; }.activity-item:hover { transform:translateX(4px); }.activity-mark { border-radius:12px; background:linear-gradient(145deg,#dff9e9,#ecfff2); }
+    .auth-dialog { border-color:rgba(52,211,153,.25); border-radius:24px; background:rgba(250,255,251,.95); backdrop-filter:blur(18px); }.footer { padding:30px 0 14px; }.reveal { animation:rise-in .65s both; }
+    @keyframes pulse { 50% { opacity:.55; box-shadow:0 0 0 7px rgba(52,211,153,.04); } } @keyframes marker-in { from { opacity:0; transform:scale(.45) translateY(14px); } to { opacity:1; transform:scale(1) translateY(0); } }
+    [data-theme="dark"] { color-scheme:dark; --page:#071b14; --surface:rgba(13,43,31,.9); --ink:#e7f9ed; --muted:#a3c3ae; --line:rgba(145,226,174,.14); --green-pale:#123c2b; --shadow:0 20px 48px rgba(0,0,0,.3); } [data-theme="dark"] body { background:radial-gradient(circle at 90% -10%,#124b36,transparent 31%),radial-gradient(circle at 2% 25%,#233d24,transparent 26%),var(--page); } [data-theme="dark"] .topbar,[data-theme="dark"] .workspace-heading,[data-theme="dark"] .stat-card,[data-theme="dark"] .tree-form,[data-theme="dark"] .admin-panel,[data-theme="dark"] .campus-map-panel,[data-theme="dark"] .table-wrap,[data-theme="dark"] .activity-item,[data-theme="dark"] .auth-dialog { background:rgba(12,43,30,.82); border-color:rgba(145,226,174,.13); } [data-theme="dark"] .site-nav,[data-theme="dark"] .initiative,[data-theme="dark"] .period { background:rgba(21,62,44,.75); border-color:rgba(145,226,174,.12); } [data-theme="dark"] .site-nav a { color:#b6d6c1; } [data-theme="dark"] .workspace-heading h1 { background:linear-gradient(100deg,#ecfff1,#75e8ab); -webkit-background-clip:text; background-clip:text; } [data-theme="dark"] .form-field input,[data-theme="dark"] .form-field select,[data-theme="dark"] .form-field textarea,[data-theme="dark"] .catalog-search,[data-theme="dark"] .catalog-status { background:#0a2b1e; color:#e7f9ed; } [data-theme="dark"] th,[data-theme="dark"] .map-toolbar { background:#103c2a; } [data-theme="dark"] tbody tr:hover { background:#103f2b; } [data-theme="dark"] .live-label { background:#103c2a; } [data-theme="dark"] .impact { background-color:#0c3826; border-color:rgba(52,211,153,.32); color:#effff4; box-shadow:0 23px 48px rgba(0,0,0,.28); } [data-theme="dark"] .impact-kicker,[data-theme="dark"] .aside-label { color:#9ce9b8; } [data-theme="dark"] .impact-title,[data-theme="dark"] .co2-value,[data-theme="dark"] .impact-fact strong { color:#effff4; } [data-theme="dark"] .co2-unit,[data-theme="dark"] .progress-meta,[data-theme="dark"] .impact-fact span,[data-theme="dark"] .impact-foot { color:#b9d8c3; } [data-theme="dark"] .impact-aside,.impact-fact { border-color:rgba(209,255,225,.18); }
+    [data-theme="dark"] .impact::before { border-color:rgba(52,211,153,.22); box-shadow:0 0 0 27px rgba(52,211,153,.06),0 0 0 55px rgba(52,211,153,.035),0 0 0 85px rgba(52,211,153,.025); } [data-theme="dark"] .impact::after { border-color:rgba(163,255,143,.2); }
+    /* Stable header layout: brand, navigation and actions share one baseline. */
+    .topbar-inner { display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:20px; }.site-nav { justify-self:center; }.topbar-meta { display:flex; width:auto; justify-self:end; align-items:center; gap:8px; white-space:nowrap; }.topbar-meta .initiative { display:none; }.auth-controls { gap:8px; }.auth-button { min-height:36px; padding:0 13px; }
+    @media (max-width:760px) { .topbar { border-radius:0 0 18px 18px; }.topbar-inner { display:flex; }.workspace-heading { min-height:220px;padding:27px 24px; }.workspace-heading::after { right:-16px;font-size:130px; }.site-nav { order:3; overflow:auto; justify-content:flex-start; }.theme-toggle { width:32px;min-height:32px; } }
   </style>
 </head>
 <body>
@@ -478,6 +515,8 @@
             <span class="initiative-mark" aria-hidden="true">ТК</span>
             <span>Таза Казахстан</span>
           </div>
+          <button class="language-toggle" id="language-toggle" type="button" aria-label="Қазақ тіліне ауысу" title="Тілді ауыстыру">KZ</button>
+          <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Переключить тему" title="Переключить тему">☾</button>
           <div class="auth-controls">
             <span class="live-label" id="server-status" data-connected="false" aria-live="polite"><span class="live-dot" aria-hidden="true"></span>Подключение к серверу</span>
             <span class="role-pill" id="user-badge" hidden></span>
@@ -1263,6 +1302,122 @@
       } catch (error) {
         document.getElementById('user-feedback').textContent = error.message;
       }
+    });
+
+    // Interface language is client-side only: records and API payloads remain unchanged.
+    const languageToggle = document.getElementById('language-toggle');
+    const originalStatusLabels = { ...statusLabels };
+    const languageTargets = [
+      ['.site-nav a:nth-child(1)', 'Шолу'], ['.site-nav a:nth-child(2)', 'Карта'], ['.site-nav a:nth-child(3)', 'Каталог'], ['.site-nav a:nth-child(4)', 'Журнал'], ['.site-nav a:nth-child(5)', 'Қосу'],
+      ['#page-title', 'Көгалдандыру трекері'], ['.workspace-heading .intro-copy', 'Кампус ағаштары, күтім мәртебесі және соңғы өзгерістер — барлығы бір жерде.'], ['.heading-action', '＋ Жаңа ағаш'],
+      ['#stats-title', 'Кампусқа қосқан үлесіміз'], ['#stats-title + .section-note', 'Ағаштар мен күтім бойынша қысқаша шолу'],
+      ['#impact-title', 'CCU ағаштарының CO₂ сіңіруін бағалау'], ['.impact-kicker', 'ӨЛШЕНЕТІН ҮЛЕСІМІЗ'], ['.progress-meta span:first-child', 'Шартты мақсатқа жету бағасы'], ['.aside-label', 'НАУҚАН НӘТИЖЕСІ'],
+      ['#campus-map-title', 'CCU кампусының картасы'], ['#campus-map-title + .section-note', 'Каспий университеті колледжі · көгалдандыруға арналған нүктелер'],
+      ['#activity-title', 'Кампус ағаштары'], ['#activity-title + .section-note', 'Отырғызу каталогы, мәртебелері және күтім жоспары'],
+      ['#add-tree-title', 'Ағаш қосу'], ['#add-tree-title + .section-note', 'Ағаш картасын толтырып, оның ағымдағы мәртебесін белгілеңіз.'],
+      ['#care-title', 'Өзгерістер журналы'], ['#care-title + .section-note', 'Отырғызулар мен күтім мәртебелерінің тарихы']
+    ];
+    languageTargets.push(
+      ['.brand-caption', 'Отырғызу және күтім трекері'],
+      ['.demo-notice', 'ⓘ Жинақ каталог бойынша есептеледі. CO₂ сіңіруі — өлшеумен расталмаған жеке бағалау.'],
+      ['.map-location', 'CCU · Алматы, Сейфуллин даңғылы, 521'],
+      ['.map-legend-item:nth-child(1)', 'CCU кампусы'], ['.map-legend-item:nth-child(2)', 'Ұсынылған нүкте'],
+      ['.map-note', 'Маңызды: сары белгілер — тек қарауға арналған ұсыныстар, расталған отырғызу орындары емес. Отырғызар алдында аумақты, коммуникацияларды тексеріп, әкімшіліктен келісім алыңыз.'],
+      ['#tree-search', ''], ['#catalog-count', ''],
+      ['.catalog-status option:nth-child(1)', 'Барлық мәртебе'], ['.catalog-status option:nth-child(2)', 'Отырғызылды'], ['.catalog-status option:nth-child(3)', 'Суарылды'], ['.catalog-status option:nth-child(4)', 'Жерсінді'],
+      ['table th:nth-child(1)', 'Ағаш және ескертпе'], ['table th:nth-child(2)', 'Кім отырғызды'], ['table th:nth-child(3)', 'Күні'], ['table th:nth-child(4)', 'Күтім мәртебесі'], ['table th:nth-child(5)', 'Келесі суару'], ['table th:nth-child(6)', 'Әрекеттер'],
+      ['#add-tree .tree-form .form-field:nth-child(1) span', 'Ағаш атауы'], ['#add-tree .tree-form .form-field:nth-child(2) span', 'Кім отырғызды'], ['#add-tree .tree-form .form-field:nth-child(3) span', 'Отырғызу күні'], ['#add-tree .tree-form .form-field:nth-child(4) span', 'Мәртебе'], ['#add-tree .tree-form .form-field:nth-child(5) span', 'Күтім туралы жазба'], ['#add-tree .tree-form .form-field:nth-child(6) span', 'Келесі суару'],
+      ['#tree-form button[type="submit"]', '＋ Ағаш қосу'], ['#cancel-tree-edit', 'Болдырмау'],
+      ['#create-user-form .form-field:nth-child(1) span', 'Логин'], ['#create-user-form .form-field:nth-child(2) span', 'Бастапқы құпиясөз'], ['#create-user-form .form-field:nth-child(3) span', 'Құқықтар'], ['#create-user-form button[type="submit"]', 'Аккаунт құру'],
+      ['.footer span:nth-child(1)', 'My Tree CCU · Колледжді көгалдандыру трекері'], ['.footer span:nth-child(2)', 'Отырғызулар мен журнал жоба дерекқорында сақталады'],
+      ['#auth-close', '×']
+    );
+    const languageAttributeTargets = [
+      ['#tree-search', 'placeholder', 'Ағаш атауы немесе топ бойынша іздеу'],
+      ['#tree-name', 'placeholder', '«CCU-2» емені'], ['#tree-planted-by', 'placeholder', 'Э-21 немесе студенттің аты'],
+      ['#tree-care-notes', 'placeholder', 'Мысалы, дің маңын мульчалау']
+    ];
+    const defaultLanguageText = new Map(languageTargets.map(([selector]) => [selector, document.querySelector(selector)?.textContent || '']));
+    const defaultAuthOpenText = document.getElementById('auth-open').textContent;
+    const defaultLogoutText = document.getElementById('logout-button').textContent;
+    function setLanguage(language) {
+      const isKazakh = language === 'kk';
+      document.documentElement.lang = isKazakh ? 'kk' : 'ru';
+      languageTargets.forEach(([selector, kazakh]) => {
+        const element = document.querySelector(selector);
+        if (element && kazakh) element.textContent = isKazakh ? kazakh : defaultLanguageText.get(selector);
+      });
+      languageAttributeTargets.forEach(([selector, attribute, kazakh]) => {
+        const element = document.querySelector(selector);
+        if (!element) return;
+        const cacheKey = `${selector}:${attribute}`;
+        if (!defaultLanguageText.has(cacheKey)) defaultLanguageText.set(cacheKey, element.getAttribute(attribute) || '');
+        element.setAttribute(attribute, isKazakh ? kazakh : defaultLanguageText.get(cacheKey));
+      });
+      const authOpen = document.getElementById('auth-open');
+      const logoutButton = document.getElementById('logout-button');
+      if (authOpen && !currentUser) authOpen.textContent = isKazakh ? 'Кіру' : defaultAuthOpenText;
+      if (logoutButton) logoutButton.textContent = isKazakh ? 'Шығу' : defaultLogoutText;
+      Object.assign(statusLabels, isKazakh
+        ? { planted: 'Отырғызылды', watered: 'Суарылды', established: 'Жерсінді' }
+        : originalStatusLabels);
+      languageToggle.textContent = isKazakh ? 'RU' : 'KZ';
+      languageToggle.setAttribute('aria-label', isKazakh ? 'Орыс тіліне ауысу' : 'Қазақ тіліне ауысу');
+      localStorage.setItem('my-tree-language', language);
+      renderDashboard();
+      if (isKazakh) translateRenderedInterface();
+    }
+    function translateRenderedInterface() {
+      const selectedStatus = document.getElementById('status-filter').value;
+      const query = document.getElementById('tree-search').value.trim().toLocaleLowerCase('ru-RU');
+      const visibleCount = trees.filter((tree) => (selectedStatus === 'all' || tree.status === selectedStatus) && `${tree.name} ${tree.plantedBy}`.toLocaleLowerCase('ru-RU').includes(query)).length;
+      document.getElementById('catalog-count').textContent = `Көрсетілгені: ${visibleCount} / ${trees.length}`;
+      const emptyState = document.getElementById('empty-state');
+      if (!emptyState.hidden) emptyState.textContent = trees.length ? 'Сұранысыңыз бойынша ағаштар табылмады.' : 'Каталог әзірге бос. Есепті бастау үшін алғашқы ағашты қосыңыз.';
+      document.querySelectorAll('.tree-action[data-action="edit"]').forEach((button) => { button.textContent = 'Өзгерту'; });
+      document.querySelectorAll('.tree-action[data-action="delete"]').forEach((button) => { button.textContent = 'Жою'; });
+      document.querySelectorAll('.status-select').forEach((select) => { select.setAttribute('aria-label', 'Ағаш мәртебесі'); });
+      const emptyActivity = document.querySelector('.activity-empty');
+      if (emptyActivity) emptyActivity.textContent = 'Тарих әзірге бос. Есепті бастау үшін ағаш қосыңыз немесе оның мәртебесін өзгертіңіз.';
+    }
+    setLanguage(localStorage.getItem('my-tree-language') === 'kk' ? 'kk' : 'ru');
+    languageToggle.addEventListener('click', () => setLanguage(document.documentElement.lang === 'kk' ? 'ru' : 'kk'));
+    document.getElementById('auth-open').addEventListener('click', () => {
+      if (document.documentElement.lang !== 'kk') return;
+      requestAnimationFrame(() => {
+        const dialog = document.getElementById('auth-dialog');
+        if (!dialog.open) return;
+        document.getElementById('auth-title').textContent = setupRequired ? 'Алғашқы баптау' : 'Трекерге кіру';
+        document.getElementById('auth-copy').textContent = setupRequired ? 'Әкімші аккаунтын жасаңыз. Одан кейін тек әкімші рұқсат бере алады.' : 'Әкімші берген логин мен құпиясөз арқылы кіріңіз.';
+        document.querySelectorAll('#login-form .form-field span').forEach((element, index) => { element.textContent = index ? 'Құпиясөз' : 'Логин'; });
+        document.querySelector('#login-form button[type="submit"]').textContent = 'Кіру';
+        document.querySelectorAll('#setup-form .form-field span').forEach((element, index) => { element.textContent = ['Әкімші логині', 'Құпиясөз (кемі 10 таңба)', 'Құпиясөзді қайталаңыз'][index]; });
+        document.querySelector('#setup-form button[type="submit"]').textContent = 'Әкімші құру';
+      });
+    });
+    const baseRenderDashboard = renderDashboard;
+    renderDashboard = function localizedRenderDashboard() {
+      baseRenderDashboard();
+      if (document.documentElement.lang === 'kk') translateRenderedInterface();
+    };
+    document.getElementById('tree-search').addEventListener('input', () => {
+      if (document.documentElement.lang === 'kk') requestAnimationFrame(translateRenderedInterface);
+    });
+    document.getElementById('status-filter').addEventListener('change', () => {
+      if (document.documentElement.lang === 'kk') requestAnimationFrame(translateRenderedInterface);
+    });
+
+    // Theme is intentionally presentation-only: application data and API flows are unchanged.
+    const themeToggle = document.getElementById('theme-toggle');
+    const savedTheme = localStorage.getItem('my-tree-theme');
+    const useDarkTheme = savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.dataset.theme = useDarkTheme ? 'dark' : 'light';
+    themeToggle.textContent = useDarkTheme ? '☀' : '☾';
+    themeToggle.addEventListener('click', () => {
+      const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = nextTheme;
+      localStorage.setItem('my-tree-theme', nextTheme);
+      themeToggle.textContent = nextTheme === 'dark' ? '☀' : '☾';
     });
 
     initializeCampusMap();
